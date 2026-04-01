@@ -8,8 +8,27 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    if (auth()->user()->role === 'manajer') {
+        return redirect()->route('manajer.dashboard');
+    }
+    return redirect()->route('auditor.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+
+
+Route::middleware(['auth', 'role:auditor'])->group(function () {
+    Route::get('/auditor/dashboard', function () {
+        return view('auditor.dashboard'); 
+    })->name('auditor.dashboard');
+});
+
+
+Route::middleware(['auth', 'role:manajer'])->group(function () {
+    Route::get('/manajer/dashboard', function () {
+        return view('manajer.dashboard'); 
+    })->name('manajer.dashboard');
+});
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

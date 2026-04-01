@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuditController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,6 +21,9 @@ Route::middleware(['auth', 'role:auditor'])->group(function () {
     Route::get('/auditor/dashboard', function () {
         return view('auditor.dashboard'); 
     })->name('auditor.dashboard');
+
+    // Halaman Form Mulai Audit Baru
+    Route::get('/auditor/audit/create', [AuditController::class, 'create'])->name('auditor.audit.create');
 });
 
 

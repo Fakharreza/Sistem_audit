@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cobit_questions', function (Blueprint $table) {
+       Schema::create('cobit_questions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('domain_id')->constrained()->cascadeOnDelete();
+            $table->integer('capability_level'); 
             $table->string('activity_code'); 
             $table->text('description'); 
             $table->timestamps();

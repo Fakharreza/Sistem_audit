@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('audits', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete(); 
             $table->string('audit_code')->unique();
-            $table->string('auditor_name');
+            $table->string('auditor_name'); 
             $table->date('audit_date');
             $table->enum('status', ['draft', 'completed'])->default('draft');
             $table->timestamps();

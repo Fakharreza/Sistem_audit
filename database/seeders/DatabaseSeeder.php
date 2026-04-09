@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DomainSeeder::class,
             CriterionSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }

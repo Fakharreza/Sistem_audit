@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuditController;
+use App\Http\Controllers\ManagerController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -10,7 +11,7 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     if (auth()->user()->role === 'manajer') {
-        return redirect()->route('manajer.dashboard');
+        return redirect()->route('manager.dashboard');
     }
     return redirect()->route('auditor.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -27,9 +28,10 @@ Route::middleware(['auth', 'role:auditor'])->group(function () {
 
 
 Route::middleware(['auth', 'role:manajer'])->group(function () {
-    Route::get('/manajer/dashboard', function () {
-        return view('manajer.dashboard'); 
-    })->name('manajer.dashboard');
+    Route::get('/manager/dashboard', [ManagerController::class, 'dashboard'])->name('manager.dashboard');
+    Route::get('/manager/audit/{audit}/evaluate', [ManagerController::class, 'evaluate'])->name('manager.audit.evaluate');
+    Route::post('/manager/audit/{audit}/calculate', [ManagerController::class, 'calculate'])->name('manager.audit.calculate');
+    Route::get('/manager/audit/{audit}/result', [ManagerController::class, 'showResult'])->name('manager.audit.result');
 });
 
 

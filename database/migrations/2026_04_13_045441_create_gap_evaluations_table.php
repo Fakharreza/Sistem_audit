@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('audit_response_id')->constrained()->onDelete('cascade');
             $table->foreignId('criterion_id')->constrained()->onDelete('cascade');
-            $table->integer('score'); // Nilai 1-5 dari Manajer
+            $table->integer('score'); 
             $table->timestamps();
         });
     }

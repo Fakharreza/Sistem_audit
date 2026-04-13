@@ -28,7 +28,6 @@ class ManagerController extends Controller
             $averageScore = AuditResponse::whereHas('audit', function ($q) {
                                 $q->where('status', 'completed');
                             })
-                            // Join ke tabel pertanyaan untuk ngecek ini domain apa
                             ->join('cobit_questions', 'audit_responses.cobit_question_id', '=', 'cobit_questions.id')
                             ->where('cobit_questions.domain_id', $domain->id)
                             ->avg('audit_responses.score');
@@ -40,7 +39,6 @@ class ManagerController extends Controller
         return view('manager.dashboard', compact('audits', 'chartLabels', 'chartData'));
     }
 
-    // 2. Menampilkan Form Input Nilai SAW (Hanya untuk temuan/gap)
     public function evaluate(Audit $audit)
     {
         $gaps = AuditResponse::with('question.domain')
@@ -58,14 +56,12 @@ class ManagerController extends Controller
         return view('manager.evaluate', compact('audit', 'gaps', 'criteria'));
     }
 
-    // 3. Menyimpan Inputan Manajer ke Database
     public function calculate(Request $request, Audit $audit)
     {
         $request->validate([
             'evaluations' => 'required|array'
         ]);
 
-        // Simpan setiap nilai kriteria ke tabel gap_evaluations
         foreach ($request->evaluations as $gapId => $crits) {
             foreach ($crits as $criterionId => $score) {
                 GapEvaluation::updateOrCreate(
@@ -75,22 +71,20 @@ class ManagerController extends Controller
             }
         }
 
-        // Setelah disimpan, langsung arahkan ke halaman hasil
+    
         return redirect()->route('manager.audit.result', $audit->id);
     }
     
-    // 4. Mengambil Data dari Database & Menghitung Ulang Rumus SAW
+    
     public function showResult(Audit $audit)
     {
         $criteria = Criterion::all();
 
-        // Ambil aktivitas gap beserta nilai evaluasi yang tadi sudah disimpan
         $gaps = AuditResponse::with(['question.domain', 'gapEvaluations'])
                     ->where('audit_id', $audit->id)
                     ->where('score', '<', 1)
                     ->get();
 
-        // Bangun ulang array evaluations dari database
         $evaluations = [];
         foreach ($gaps as $gap) {
             foreach ($gap->gapEvaluations as $eval) {
@@ -98,62 +92,95 @@ class ManagerController extends Controller
             }
         }
 
-        // Cek jika belum ada data evaluasi di database
         if (empty($evaluations)) {
             return redirect()->route('manager.audit.evaluate', $audit->id);
         }
 
-        // --- MULAI PERHITUNGAN MATEMATIKA SAW ---
-        
-        // Tahap 1: Cari Nilai Min/Max
         $minMax = [];
         foreach ($criteria as $criterion) {
             $values = [];
             foreach ($evaluations as $gapId => $crits) {
                 $values[] = $crits[$criterion->id];
             }
-            
-            if ($criterion->type == 'benefit') {
-                $minMax[$criterion->id] = max($values);
-            } else {
-                $minMax[$criterion->id] = min($values);
-            }
+            $minMax[$criterion->id] = $criterion->type == 'benefit' ? max($values) : min($values);
         }
 
-        // Tahap 2 & 3: Normalisasi dan Perhitungan V
         $results = [];
         foreach ($gaps as $gap) {
             $totalScore = 0;
             $normalizedScores = [];
-
             foreach ($criteria as $criterion) {
                 $x = $evaluations[$gap->id][$criterion->id]; 
                 $weight = $criterion->weight; 
-
-                if ($criterion->type == 'benefit') {
-                    $r = $x / $minMax[$criterion->id];
-                } else {
-                    $r = $minMax[$criterion->id] / $x;
-                }
-
+                $r = $criterion->type == 'benefit' ? ($x / $minMax[$criterion->id]) : ($minMax[$criterion->id] / $x);
                 $normalizedScores[$criterion->id] = $r;
                 $totalScore += ($r * $weight);
             }
-
             $results[] = [
-                'gap' => $gap,
-                'original' => $evaluations[$gap->id],
-                'normalized' => $normalizedScores,
-                'final_score' => $totalScore
+                'gap' => $gap, 'original' => $evaluations[$gap->id],
+                'normalized' => $normalizedScores, 'final_score' => $totalScore
+            ];
+        }
+        
+        // Urutkan Ranking SAW dari terbesar ke terkecil
+        usort($results, function($a, $b) { return $b['final_score'] <=> $a['final_score']; });
+
+        // ==========================================================
+        // 2. MAPPING SKOR SAW UNTUK MENGURUTKAN ROADMAP
+        // ==========================================================
+        $domainSawScores = [];
+        foreach ($results as $res) {
+            $domainName = $res['gap']->question->domain->code . ' - ' . $res['gap']->question->domain->name;
+            // Ambil skor SAW tertinggi untuk domain ini
+            if (!isset($domainSawScores[$domainName])) {
+                $domainSawScores[$domainName] = $res['final_score'];
+            } else {
+                $domainSawScores[$domainName] = max($domainSawScores[$domainName], $res['final_score']);
+            }
+        }
+
+        // ==========================================================
+        // 3. LOGIKA UNTUK TABEL ROADMAP AOI
+        // ==========================================================
+        $allResponses = AuditResponse::with('question.domain')
+                            ->where('audit_id', $audit->id)
+                            ->get();
+
+        $groupedByDomain = $allResponses->groupBy(function($item) {
+            return $item->question->domain->code . ' - ' . $item->question->domain->name;
+        });
+
+        $roadmaps = [];
+        foreach ($groupedByDomain as $domainName => $responses) {
+            $sortedResponses = $responses->sortBy('question.capability_level');
+
+            $currentMaturity = 5; 
+            $targetLevel = null;
+            $recommendation = '';
+
+            foreach ($sortedResponses as $resp) {
+                if ($resp->score < 1) {
+                    $targetLevel = $resp->question->capability_level;
+                    $recommendation = $resp->question->description; 
+                    $currentMaturity = $targetLevel - 1; 
+                    break; 
+                }
+            }
+
+            $roadmaps[] = [
+                'domain' => $domainName,
+                'maturity' => $currentMaturity,
+                'target_level' => $targetLevel,
+                'recommendation' => $recommendation,
+                'sort_score' => $domainSawScores[$domainName] ?? 0
             ];
         }
 
-        // Tahap 4: Perangkingan
-        usort($results, function($a, $b) {
-            return $b['final_score'] <=> $a['final_score'];
+       
+        usort($roadmaps, function($a, $b) {
+            return $b['sort_score'] <=> $a['sort_score'];
         });
 
-        // Lempar ke halaman result.blade.php
-        return view('manager.result', compact('audit', 'results', 'criteria'));
+        return view('manager.result', compact('audit', 'results', 'criteria', 'roadmaps'));
     }
 }

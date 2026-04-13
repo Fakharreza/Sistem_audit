@@ -26,4 +26,9 @@ class AuditResponse extends Model
     {
         return $this->belongsTo(CobitQuestion::class, 'cobit_question_id');
     }
+    
+    public function gapEvaluations()
+    {
+        return $this->hasMany(GapEvaluation::class);
+    }
 }

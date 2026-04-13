@@ -16,7 +16,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-200 mb-8">
                 <div class="p-6 border-b border-gray-200">
                     <h3 class="text-xl font-bold text-gray-900">Prioritas Eksekusi (SAW)</h3>
-                    <p class="text-sm text-gray-500 mt-1">Urutan pengerjaan masalah berdasarkan bobot Urgensi, Biaya, dan Kemudahan.</p>
+                    <p class="text-sm text-gray-500 mt-1">Urutan rekomendasi perbaikan berdasarkan kalkulasi matriks evaluasi dan kriteria SAW.</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">

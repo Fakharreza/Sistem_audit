@@ -32,6 +32,13 @@ Route::middleware(['auth', 'role:manajer'])->group(function () {
     Route::get('/manager/audit/{audit}/evaluate', [ManagerController::class, 'evaluate'])->name('manager.audit.evaluate');
     Route::post('/manager/audit/{audit}/calculate', [ManagerController::class, 'calculate'])->name('manager.audit.calculate');
     Route::get('/manager/audit/{audit}/result', [ManagerController::class, 'showResult'])->name('manager.audit.result');
+    // --- MANAJEMEN KRITERIA SAW ---
+    Route::get('/manager/criteria', [App\Http\Controllers\CriterionController::class, 'index'])->name('manager.criteria.index');
+    Route::post('/manager/criteria', [App\Http\Controllers\CriterionController::class, 'store'])->name('manager.criteria.store');
+    Route::put('/manager/criteria/all-update', [App\Http\Controllers\CriterionController::class, 'updateAll'])->name('manager.criteria.updateAll');
+    Route::delete('/manager/criteria/{criterion}', [App\Http\Controllers\CriterionController::class, 'destroy'])->name('manager.criteria.destroy');
+    Route::post('/manager/criteria/reset', [App\Http\Controllers\CriterionController::class, 'reset'])->name('manager.criteria.reset');
+    
 });
 
 

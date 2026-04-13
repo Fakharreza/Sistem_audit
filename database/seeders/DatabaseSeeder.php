@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             DomainSeeder::class,
             CriterionSeeder::class,
             UserSeeder::class,
+            QuestionSeeder::class,
         ]);
     }
 }

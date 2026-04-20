@@ -8,23 +8,46 @@ use App\Models\Criterion;
 use App\Models\AuditResponse;
 use App\Models\GapEvaluation; 
 use App\Models\Domain; 
-use App\Models\AuditProgress; // <-- Tambahan Model Baru
+use App\Models\AuditProgress;
 
 class ManagerController extends Controller
 {
-   public function dashboard()
+    public function dashboard()
     {
         $audits = Audit::where('status', 'completed')
                        ->orderBy('updated_at', 'desc')
                        ->get();
 
-
+        // 1. HITUNG SKOR ITML BERDASARKAN RATA-RATA MATURITY LEVEL (RUMUS BENAR)
         foreach ($audits as $audit) {
-            $avg = AuditResponse::where('audit_id', $audit->id)->avg('score');
-            $audit->itml_score = $avg ? round($avg * 5, 2) : 0;
+            $responses = AuditResponse::with('question')->where('audit_id', $audit->id)->get();
+            $grouped = $responses->groupBy('question.domain_id');
+
+            $totalMaturity = 0;
+            $domainCount = 0;
+
+            foreach ($grouped as $domainId => $domainResponses) {
+                $validResponses = $domainResponses->filter(function($r) { return $r->question != null; });
+                if ($validResponses->isEmpty()) continue;
+
+                // Terapkan sistem Waterfall COBIT
+                $sorted = $validResponses->sortBy('question.capability_level');
+                $maturity = 5; // Asumsi maksimal
+                foreach ($sorted as $resp) {
+                    if ($resp->score < 1) { // Jika ada yang tidak Fully
+                        $maturity = $resp->question->capability_level - 1;
+                        break;
+                    }
+                }
+                $totalMaturity += $maturity;
+                $domainCount++;
+            }
+
+            // ITML Score adalah rata-rata dari Maturity tiap Domain
+            $audit->itml_score = $domainCount > 0 ? round($totalMaturity / $domainCount, 2) : 0;
         }
 
-      
+        // 2. SIAPKAN SPIDER CHART UNTUK AUDIT TERBARU
         $domains = Domain::orderBy('code', 'asc')->get();
         $latestCompletedAudit = $audits->first(); 
         
@@ -51,7 +74,6 @@ class ManagerController extends Controller
                 } else {
                     $sortedResponses = $domainResponses->sortBy('question.capability_level');
                     $maturity = 5; 
-                    
                     foreach ($sortedResponses as $resp) {
                         if ($resp->score < 1) {
                             $maturity = $resp->question->capability_level - 1;
@@ -189,14 +211,32 @@ class ManagerController extends Controller
 
         $criteria = $snapshotCriteria; 
 
-        $avg = AuditResponse::where('audit_id', $audit->id)->avg('score');
-        $audit->itml_score = $avg ? round($avg * 5, 2) : 0;
+        $totalMaturity = 0;
+        foreach ($roadmaps as $rm) {
+            $totalMaturity += $rm['maturity'];
+        }
+        $audit->itml_score = count($roadmaps) > 0 ? round($totalMaturity / count($roadmaps), 2) : 0;
 
         $progressNotes = AuditProgress::where('audit_id', $audit->id)->pluck('notes', 'domain_name')->toArray();
 
-        return view('manager.result', compact('audit', 'results', 'criteria', 'roadmaps', 'progressNotes'));
-    }
+        // KITA LEMPAR SEMUA DOMAIN UNTUK CHART
+        $allDomains = Domain::orderBy('code', 'asc')->get();
+        $chartLabels = [];
+        $chartData = [];
 
+        $roadmapMaturities = [];
+        foreach($roadmaps as $rm) {
+            $code = explode(' - ', $rm['domain'])[0];
+            $roadmapMaturities[$code] = $rm['maturity'];
+        }
+
+        foreach ($allDomains as $domain) {
+            $chartLabels[] = $domain->code;
+            $chartData[] = $roadmapMaturities[$domain->code] ?? 0;
+        }
+
+        return view('manager.result', compact('audit', 'results', 'criteria', 'roadmaps', 'progressNotes', 'chartLabels', 'chartData'));
+    }
 
     public function storeProgress(Request $request, Audit $audit)
     {

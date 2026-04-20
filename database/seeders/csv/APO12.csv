@@ -1,0 +1,66 @@
+﻿"Domain : Align, Plan, and Organize",,,,,,,,,
+Management Objective : APO12 - Managed Risk,,,,,,,,,
+Capability Level 2,,,,,,,,,
+,APO12.01 Collect data.,,,,,,,,
+,,1,"Metode untuk pengumpulan, klasifikasi, dan analisis data terkait risiko TI telah ditetapkan.",,,,,,
+,,2,Data terkait risiko TI yang relevan dan signifikan di lingkungan operasi internal dan eksternal perusahaan telah dicatat.,,,,,,
+,APO12.03 Maintain a risk profile,,,,,,,,
+,,1,"Terdapat inventarisasi proses bisnis dan dokumentasi ketergantungannya pada proses manajemen layanan TI dan sumber daya infrastruktur TI
+
+(Serta telah dilakukan identifikasi personil, aplikasi, infrastruktur, fasilitas, catatan manual yang penting, vendor, pemasok, untuk mendukung pelaksanaan proses bisnis)",,,,,,✓
+,,2,"Telah terdapat penentuan layanan TI dan sumber daya infrastruktur TI mana yang kritikal untuk menopang operasional proses bisnis, disertai analisis dependensinya.",,,,,,✓
+,,3,"Skenario risiko saat initelah di agregasi berdasarkan kategori, lini bisnis, dan area fungsional",,,,,,✓
+,APO12.05 Define a risk management action portfolio.,,,,,,,,
+,,1,Pemeliharaan terhadap pencatatan aktivitas pengendalian yang ada untuk memitigasi risiko dan memungkinkan pengambilan risiko sesuai dengan selera risko (risk appetite) dan toleransi risiko (mengklasifikasikan aktivitas pengendalian dan memetakannya ke skenario risiko TI yang spesifik dan skenario gabungan dari risiko TI) telah diterapkan.,,,,,,✓
+Capability Level 3,,,,,,,,,
+,APO12.01 Collect data.,,,,,,,,
+,,1,Taksonomi risiko untuk definisi skenario risiko dan kategori dampak serta kemungkinan yang konsisten telah ditetapkan.,,,,,,
+,,2,"Pencatatan data tentang peristiwa risiko yang telah menyebabkan atau mungkin menyebabkan dampak bisnis sesuai kategori dampak yang ditetapkan dalam taksonomi risiko telah diterapkan. Data yang relevan dari isu, insiden, masalah, dan investigasi terkait telah di capture",,,,,,
+,APO12.02 Analyze risk.,,,,,,,,
+,,1,Ruang lingkup analisis risiko (dengan mempertimbangkan semua faktor risiko dan/atau tingkat  kritikalitas aset dari sudut pandang bisnis) telah ditentukan.,,,,,,
+,,2,"Telah dilakukan proses penyusunan dan pembaharuan skenario risiko TI secara berkala, dengan  memperhatikan eksposur kerugian terkait TI dan skenario mengenai risiko reputasi, termasuk skenario dan/atau peristiwa ancaman, serta cara pengendaliannya.",,,,,,
+,,3,"Frekuensi kemungkinan dan besarnya kerugian/keuntungan yang terkait dengan skenario risiko TI telah diperkirakan, dengan mempertimbangkan semua faktor risiko yang berlaku",,,,,,
+,,4,Komparasi terkait risiko saat ini (eksposur kerugian terkait TI) dengan selera risiko dan toleransi risiko yang dapat diterima /tidak dapat diterima telah dilakukan.,,,,,,
+,,5,Usulan respon terhadap risiko untuk risiko-risiko yang melebihi selera risiko (risk appetite) dan tingkat toleransi risiko telah diberikan.,,,,,,
+,,6,"Tindakan respon terhadap risiko, serta identifikasi syarat dan ekspektasi dari tindakan respon untuk memitigasi risiko, telah diterapkan pada setiap proyek atau program.",,,,,,
+,APO12.03 Maintain a risk profile.,,,,,,,,
+,,1,"Pencatatan secara teratur mengenai semua informasi profil risiko dan mengkonsolidasikannya ke dalam profil risiko agregat, telah dilakukan",,,,,,
+,,2,Pencatatan informasi mengenai status rencana tindakan risiko untuk dimasukkan dalam profil risiko TI ditingkat perusahaan telah dilakukan,,,,,,
+,APO12.04 Articulate risk.,,,,,,,,
+,,1,Pelaporan hasil analisis risiko kepada semua pemangku kepentingan yang terkena dampak telah dilakukan dalam bentuk dan format yang berguna untuk mendukung keputusan perusahaan ,,,,,,
+,,2,"Skenario terburuk dan skenario yang paling mungkin terjadi, eksposur kerugian terkait TI dan reputasi yang signifikan telah dipahami oleh pengambil keputusan dengan mempertimbangan hukum dan peraturan atau kategori dampak lainnya sesuai dengan taksonomi risiko.",,,,,,
+,,3,"Penyampaian laporan mengenai profil risiko terkini kepada seluruh pemangku kepentingan (meliputi informasi tentang efektivitas proses manajemen risiko, efektivitas pengendalian, kesenjangan, inkonsistensi, redundansi, status remediasi dan dampaknya terhadap profil risiko) telah diterapkan.",,,,,,
+,,4,"Identifikasi peluang-peluang TI yang memungkinkan penerimaan risiko yang lebih besar, serta peningkatan pertumbuhan dan manfaat bagi perusahaan secara berkala telah diterapkan.",,,,,,
+,APO12.05 Define a risk management action portfolio.,,,,,,,,
+,,1,Telah dipastikan bahwa setiap entitas organisasi melakukan pemantauan risiko dan bertanggung jawab untuk melakukan treatment dalam tingkat toleransi yang sudah ditentukan.,,,,,,
+,,2,"Rangkaian usulan proyek yang seimbang, yang dirancang untuk mengurangi risiko dan/atau proyek-proyek yang memberikan peluang strategis bagi perusahaan , dengan mempertimbangkan biaya, manfaat, efek pada profil risiko dan peraturan saat ini sudah diterapkan.",,,,,,
+,APO12.06 Respond to risk.,,,,,,,,
+,,1,"Persiapan, pemeliharaan dan pengujian rencana yang mendokumentasikan langkah-langkah spesifik yang harus diambil ketika peristiwa risiko dapat menyebabkan insiden operasional atau pengembangan yang signifikan dengan dampak bisnis yang serius telah diterapkan.",,,,,,
+,,2,Rencana respons yang tepat untuk meminimalkan dampak saat insiden risiko terjadi sudah diterapkan.,,,,,,
+Capability Level 4,,,,,,,,,
+,APO12.01 Collect data.,,,,,,,,
+,,1,"Survei dan analisis data risiko TI historis dan pengalaman kerugian dari data dan tren yang tersedia secara eksternal (misalnya melalui rekan industri melalui log peristiwa berbasis industri, database, dan perjanjian industri untuk pengungkapan peristiwa umum) telah diterapkan.",,,,,,
+,,2,"Pengelolaan data untuk kejadian yang serupa, yang terkumpul dan disoroti faktor-faktor yang memberikan kontribusi terjadinya kejadian tersebut telah dilakukan
+(faktor-faktor umum yang berkontribusi di beberapa peristiwa perlu dipertimbangkan)",,,,,,
+,,3,"Kondisi spesifik yang ada atau tidak ada saat terjadinya risiko, dan bagaimana kondisi tersebut memengaruhi frekuensi kejadian dan besaran kerugian telah ditentukan.",,,,,,
+,,4,Analisis kejadian dan faktor risiko secara berkala untuk mengidentifikasi masalah risiko yang baru atau yang sedang berkembang dan untuk memperoleh pemahaman tentang faktor risiko internal dan eksternal yang terkait telah dilakukan.,,,,,,
+,APO12.02 Analyze risk.,,,,,,,,
+,,1,"Hasil analisis risiko dan analisis dampak bisnis (BIA) telah divalidasi sebelum digunakan dalam pengambilan keputusan.
+
+(Telah dipastikan bahwa analisis tersebut sesuai dengan persyaratan perusahaan dan verifikasi bahwa estimasi telah dikalibrasi dengan benar dan diteliti untuk mengetahui biasnya).",,,,,,
+,APO12.03 Maintain a risk profile.,,,,,,,,
+,,1,"Berdasarkan semua data profil risiko,  sudah ditentukan serangkaian indikator risiko yang memungkinkan identifikasi dan pemantauan risiko saat ini dan tren risiko secara cepat.",,,,,,
+,,2,Informasi mengenai peristiwa risiko TI yang telah terjadi telah diperoleh untuk dimasukkan dalam profil risiko TI perusahaan.,,,,,,
+,APO12.04 Articulate risk.,,,,,,,,
+,,1,"Peninjauan hasil penilaian pihak ketiga yang objektif dan audit internal serta tinjauan jaminan kualitas, serta menyertakan hal tersebut dalam profil risiko telah diterapkan.
+
+(Kesenjangan yang teridentifikasi dan eksposur kerugian terkait TI perlu ditinjau untuk menentukan kebutuhan analisis risiko tambahan)",,,,,,
+,APO12.06 Respond to risk.,,,,,,,,
+,,1,"Telah dilakukan kategorisasi insiden dan perbandingan eksposur kerugian terkait TI dengan ambang batas toleransi risiko. 
+Serta terdapat komunikasi dampak bisnis kepada pengambil keputusan sebagai bagian dari pelaporan dan pembaruan profil risiko.",,,,,,
+,,2,Pemeriksaan terhadap kejadian buruk/kerugian dimasa lalu dan peluang yang terlewatkan telah dilakukan dan penyebab utamanya telah ditentukan.,,,,,,
+Capability Level 5,,,,,,,,,
+,APO12.02 Analyze risk.,,,,,,,,
+,,1,"Analisis biaya/manfaat terhadap pilihan-pilihan tindakan respon terhadap risiko potensial seperti avoid, reduce/mitigate, transfer/share, accept dan exploit/seize, disertai dengan  konfirmasi terhadap respon risiko yang optimal telah diterapkan.",,,,,,
+,APO12.06 Respond to risk.,,,,,,,,
+,,1,"Akar penyebab, persyaratan respon terhadap risiko tambahan, dan perbaikan proses kepada pengambil keputusan yang tepat telah dikomunikasikan, serta telahdisertakan dalam proses tata kelola risiko",,,,,,

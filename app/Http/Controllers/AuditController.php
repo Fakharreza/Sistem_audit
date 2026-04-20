@@ -52,9 +52,52 @@ class AuditController extends Controller
             abort(403, 'Anda tidak memiliki akses ke sesi audit ini.');
         }
 
-        $audit->load('domains.questions');
-        return view('auditor.kuesioner', compact('audit'));
+        $audit->load(['domains.questions' => function ($query) {
+            $query->orderBy('capability_level', 'asc')->orderBy('activity_code', 'asc');
+        }]);
+
+        $groupedData = [];
+        foreach ($audit->domains as $domain) {
+            $groupedByLevelAndActivity = $domain->questions->groupBy('capability_level')->map(function ($levelGroup) {
+                return $levelGroup->groupBy('activity_code');
+            });
+
+            $groupedData[$domain->id] = [
+                'domain_name' => $domain->code . ' - ' . $domain->name,
+                'levels' => $groupedByLevelAndActivity
+            ];
+        }
+
+        $existingResponses = \App\Models\AuditResponse::where('audit_id', $audit->id)
+                                ->get()
+                                ->keyBy('cobit_question_id');
+
+        $tabStatuses = [];
+        foreach ($audit->domains as $domain) {
+            $totalQuestions = $domain->questions->count();
+            $answered = 0;
+            
+            // Hitung berapa soal yang sudah dijawab di domain ini
+            foreach ($domain->questions as $q) {
+                if (isset($existingResponses[$q->id]) && $existingResponses[$q->id]->score !== null) {
+                    $answered++;
+                }
+            }
+
+            // Tentukan Kelas CSS berdasarkan rasio jawaban
+            if ($totalQuestions == 0 || $answered == 0) {
+                $tabStatuses[$domain->id] = 'bg-gray-100 text-gray-500 border-gray-200'; // ABU-ABU (Kosong)
+            } elseif ($answered < $totalQuestions) {
+                $tabStatuses[$domain->id] = 'bg-yellow-100 text-yellow-700 border-yellow-300'; // KUNING (Sebagian)
+            } else {
+                $tabStatuses[$domain->id] = 'bg-blue-100 text-blue-700 border-blue-300'; // BIRU (Lengkap)
+            }
+        }
+        $isReadOnly = $audit->status === 'completed';
+
+        return view('auditor.kuesioner', compact('audit', 'groupedData', 'existingResponses', 'tabStatuses', 'isReadOnly'));
     }
+
     public function storeKuesioner(Request $request, Audit $audit)
     {
         if ($audit->user_id !== Auth::id()) {
@@ -62,36 +105,50 @@ class AuditController extends Controller
         }
 
         $request->validate([
-            'answers' => 'required|array',
-            'answers.*.score' => 'required|numeric|in:0,0.5,1', 
-            'answers.*.notes' => 'nullable|string', 
+            'answers' => 'nullable|array',
+            'answers.*.score' => 'nullable|numeric', 
+            'answers.*.notes' => 'nullable|string',
             'answers.*.evidence' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
-        foreach ($request->answers as $questionId => $answer) {
-            
-            $evidencePath = null;
-            
-            if (isset($answer['evidence'])) {
-                $evidencePath = $answer['evidence']->store('evidences', 'public');
-            }
+        $action = $request->input('action'); 
 
-            // Simpan ke tabel audit_responses
-            \App\Models\AuditResponse::create([
-                'audit_id' => $audit->id,
-                'cobit_question_id' => $questionId,
-                'score' => $answer['score'],
-                'notes' => $answer['notes'] ?? null,
-                'evidence_file' => $evidencePath, 
-            ]);
+        foreach ($request->answers ?? [] as $questionId => $answer) {
+            
+            $hasScore = isset($answer['score']);
+            $hasNotes = !empty($answer['notes']);
+            $hasFile = isset($answer['evidence']);
+
+            if ($hasScore || $hasNotes || $hasFile) {
+                
+    
+                $existing = \App\Models\AuditResponse::where('audit_id', $audit->id)
+                                ->where('cobit_question_id', $questionId)->first();
+
+                $dataToUpdate = [];
+                
+                if ($hasScore) $dataToUpdate['score'] = $answer['score'];
+                if ($hasNotes) $dataToUpdate['notes'] = $answer['notes'];
+
+                if ($hasFile) {
+                    $dataToUpdate['evidence_file'] = $answer['evidence']->store('evidences', 'public');
+                }
+
+                \App\Models\AuditResponse::updateOrCreate(
+                    [
+                        'audit_id' => $audit->id,
+                        'cobit_question_id' => $questionId
+                    ],
+                    $dataToUpdate
+                );
+            }
         }
 
-        $audit->update([
-            'status' => 'completed'
-        ]);
-
-        // 5. Kembalikan ke dashboard
-        return redirect()->route('auditor.dashboard')
-                         ->with('success', 'Luar biasa! Kuesioner berhasil diselesaikan dan disimpan.');
+        if ($action === 'submit') {
+            $audit->update(['status' => 'completed']);
+            return redirect()->route('auditor.dashboard')->with('success', 'Luar biasa! Kuesioner berhasil diselesaikan dan disimpan.');
+        } else {
+            return redirect()->back()->with('success', 'Draft berhasil disimpan! (Termasuk File Bukti Dukung)');
+        }
     }
 }

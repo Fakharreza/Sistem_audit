@@ -88,18 +88,21 @@
                                         <td class="px-6 py-4">{{ $audit->updated_at->translatedFormat('d F Y') }}</td>
                                         
                                         <td class="px-6 py-4 text-center">
-                                            @if($audit->status === 'completed')
-                                                <div class="flex flex-col items-center justify-center gap-1.5">
+                                            <div class="flex flex-col items-center justify-center gap-1.5">
+                                                @if($audit->can_see_result)
                                                     <span class="px-3 py-1 text-[11px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
                                                         COMPLETED
                                                     </span>
-                                                    <span class="px-2 py-0.5 text-[11px] font-bold rounded bg-indigo-50 text-indigo-700 border border-indigo-200" title="Skor ITML">
-                                                        ⭐ ITML: {{ number_format($audit->itml_score, 2) }}
+                                                @else
+                                                    <span class="px-3 py-1 text-[11px] font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                                                        BELUM DINILAI
                                                     </span>
-                                                </div>
-                                            @else
-                                                <span class="px-3 py-1 text-[11px] font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-200">DRAFT</span>
-                                            @endif
+                                                @endif
+                                                
+                                                <span class="px-2 py-0.5 text-[11px] font-bold rounded bg-indigo-50 text-indigo-700 border border-indigo-200" title="Skor Rata-Rata ITML">
+                                                    ⭐ ITML: {{ number_format($audit->itml_score, 2) }}
+                                                </span>
+                                            </div>
                                         </td>
                                         
                                         <td class="px-6 py-4 text-center">

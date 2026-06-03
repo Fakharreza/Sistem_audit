@@ -25,7 +25,7 @@
 
             <div class="mb-8 p-6 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl shadow-lg text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h3 class="text-2xl font-black mb-1">🎉 Evaluasi Selesai!</h3>
+                    <h3 class="text-2xl font-black mb-1">  Evaluasi Selesai!</h3>
                     <p class="text-indigo-100 text-sm">Keseluruhan nilai rata-rata tingkat kapabilitas (ITML Score) untuk audit ini.</p>
                 </div>
                 <div class="flex items-center gap-3 w-full md:w-auto">

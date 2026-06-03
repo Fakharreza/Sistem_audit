@@ -53,6 +53,13 @@ class ManagerController extends Controller
                 $domainCount++;
             }
             $audit->itml_score = $domainCount > 0 ? round($totalMaturity / $domainCount, 2) : 0;
+
+            $hasGaps = AuditResponse::where('audit_id', $audit->id)->where('score', '<', 1)->exists();
+            $isEvaluated = GapEvaluation::whereHas('auditResponse', function($query) use ($audit) {
+                $query->where('audit_id', $audit->id);
+            })->exists();
+            
+            $audit->can_see_result = (!$hasGaps) || ($hasGaps && $isEvaluated);
         }
 
         $domains = Domain::orderBy('code', 'asc')->get();

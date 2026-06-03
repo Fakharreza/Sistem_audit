@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Domain;
 use App\Models\Audit;
 use Illuminate\Http\Request;
@@ -8,15 +9,28 @@ use Illuminate\Support\Facades\Auth;
 
 class AuditController extends Controller
 {
-
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $audits = Audit::where('user_id', Auth::id())
-                       ->orderBy('created_at', 'desc')
-                       ->get();
+        $query = Audit::where('user_id', Auth::id());
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('audit_code', 'like', "%{$search}%");
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('year')) {
+            $query->whereYear('audit_date', $request->year);
+        }
+
+        $audits = $query->orderBy('created_at', 'desc')->paginate(5)->withQueryString();
 
         return view('auditor.dashboard', compact('audits'));
     }
+    
     public function create()
     {
         $domains = Domain::all();
@@ -25,12 +39,20 @@ class AuditController extends Controller
 
     public function store(Request $request)
     {
-        
+
         $request->validate([
-            'audit_code' => 'required|string|max:255',
+            // Tambahkan unique:audits,audit_code
+            'audit_code' => 'required|string|max:255|unique:audits,audit_code',
             'audit_date' => 'required|date',
             'domain_ids' => 'required|array',
+        ], [
+            // KUSTOM PESAN ERROR BAHASA INDONESIA BIAR CANTIK
+            'audit_code.unique' => 'Gagal! Nama / Kode Audit ini sudah pernah digunakan. Silakan gunakan nama lain.',
+            'audit_code.required' => 'Nama / Kode Audit wajib diisi.',
+            'audit_date.required' => 'Tanggal pelaksanaan wajib diisi.',
+            'domain_ids.required' => 'Silakan centang minimal 1 domain COBIT 2019 untuk dievaluasi.',
         ]);
+        // ========================================================
 
         $audit = Audit::create([
             'user_id' => Auth::id(),             
@@ -77,20 +99,18 @@ class AuditController extends Controller
             $totalQuestions = $domain->questions->count();
             $answered = 0;
             
-            // Hitung berapa soal yang sudah dijawab di domain ini
             foreach ($domain->questions as $q) {
                 if (isset($existingResponses[$q->id]) && $existingResponses[$q->id]->score !== null) {
                     $answered++;
                 }
             }
 
-            // Tentukan Kelas CSS berdasarkan rasio jawaban
             if ($totalQuestions == 0 || $answered == 0) {
-                $tabStatuses[$domain->id] = 'bg-gray-100 text-gray-500 border-gray-200'; // ABU-ABU (Kosong)
+                $tabStatuses[$domain->id] = 'bg-gray-100 text-gray-500 border-gray-200'; 
             } elseif ($answered < $totalQuestions) {
-                $tabStatuses[$domain->id] = 'bg-yellow-100 text-yellow-700 border-yellow-300'; // KUNING (Sebagian)
+                $tabStatuses[$domain->id] = 'bg-yellow-100 text-yellow-700 border-yellow-300'; 
             } else {
-                $tabStatuses[$domain->id] = 'bg-blue-100 text-blue-700 border-blue-300'; // BIRU (Lengkap)
+                $tabStatuses[$domain->id] = 'bg-blue-100 text-blue-700 border-blue-300'; 
             }
         }
         $isReadOnly = $audit->status === 'completed';
@@ -121,10 +141,6 @@ class AuditController extends Controller
 
             if ($hasScore || $hasNotes || $hasFile) {
                 
-    
-                $existing = \App\Models\AuditResponse::where('audit_id', $audit->id)
-                                ->where('cobit_question_id', $questionId)->first();
-
                 $dataToUpdate = [];
                 
                 if ($hasScore) $dataToUpdate['score'] = $answer['score'];

@@ -12,13 +12,24 @@ use App\Models\AuditProgress;
 
 class ManagerController extends Controller
 {
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $audits = Audit::where('status', 'completed')
-                       ->orderBy('updated_at', 'desc')
-                       ->get();
+        $query = Audit::where('status', 'completed');
 
-        // 1. HITUNG SKOR ITML BERDASARKAN RATA-RATA MATURITY LEVEL (RUMUS BENAR)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('audit_code', 'like', "%{$search}%")
+                  ->orWhere('auditor_name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('year')) {
+            $query->whereYear('audit_date', $request->year);
+        }
+
+        $audits = $query->orderBy('updated_at', 'desc')->paginate(5)->withQueryString();
+
         foreach ($audits as $audit) {
             $responses = AuditResponse::with('question')->where('audit_id', $audit->id)->get();
             $grouped = $responses->groupBy('question.domain_id');
@@ -30,11 +41,10 @@ class ManagerController extends Controller
                 $validResponses = $domainResponses->filter(function($r) { return $r->question != null; });
                 if ($validResponses->isEmpty()) continue;
 
-                // Terapkan sistem Waterfall COBIT
                 $sorted = $validResponses->sortBy('question.capability_level');
-                $maturity = 5; // Asumsi maksimal
+                $maturity = 5; 
                 foreach ($sorted as $resp) {
-                    if ($resp->score < 1) { // Jika ada yang tidak Fully
+                    if ($resp->score < 1) { 
                         $maturity = $resp->question->capability_level - 1;
                         break;
                     }
@@ -42,14 +52,11 @@ class ManagerController extends Controller
                 $totalMaturity += $maturity;
                 $domainCount++;
             }
-
-            // ITML Score adalah rata-rata dari Maturity tiap Domain
             $audit->itml_score = $domainCount > 0 ? round($totalMaturity / $domainCount, 2) : 0;
         }
 
-        // 2. SIAPKAN SPIDER CHART UNTUK AUDIT TERBARU
         $domains = Domain::orderBy('code', 'asc')->get();
-        $latestCompletedAudit = $audits->first(); 
+        $latestCompletedAudit = Audit::where('status', 'completed')->orderBy('updated_at', 'desc')->first(); 
         
         $chartLabels = [];
         $chartData = [];
@@ -98,8 +105,9 @@ class ManagerController extends Controller
                     ->get();
 
         if ($gaps->isEmpty()) {
-            return redirect()->route('manager.dashboard')
-                             ->with('success', 'Luar biasa! Audit ini tidak memiliki gap. Tidak perlu perhitungan SAW.');
+            // FIX BUG 1: JIKA SEMPURNA, LANGSUNG LEMPAR KE RESULT (BYPASS SAW)
+            return redirect()->route('manager.audit.result', $audit->id)
+                             ->with('success', 'Luar biasa! Audit ini mendapatkan nilai sempurna (Level 5) di semua area. Tidak perlu perhitungan prioritas SAW.');
         }
 
         $criteria = Criterion::all();
@@ -141,12 +149,16 @@ class ManagerController extends Controller
                         'weight' => $eval->weight_snapshot ?? ($eval->criterion->weight ?? 0),
                         'type' => $eval->type_snapshot ?? ($eval->criterion->type ?? 'benefit'),
                         'name' => $eval->criterion->name ?? 'Kriteria (Telah Dihapus)'
+                        
                     ];
                 }
             }
         }
 
-        if (empty($evaluations)) return redirect()->route('manager.audit.evaluate', $audit->id);
+        $hasGaps = AuditResponse::where('audit_id', $audit->id)->where('score', '<', 1)->exists();
+        if ($hasGaps && empty($evaluations)) {
+            return redirect()->route('manager.audit.evaluate', $audit->id);
+        }
 
         $minMax = [];
         foreach ($snapshotCriteria as $criterion) {
@@ -154,7 +166,9 @@ class ManagerController extends Controller
             foreach ($evaluations as $gapId => $crits) {
                 $values[] = $crits[$criterion['id']] ?? 1; 
             }
-            $minMax[$criterion['id']] = $criterion['type'] == 'benefit' ? max($values) : min($values);
+            if(!empty($values)) {
+                $minMax[$criterion['id']] = $criterion['type'] == 'benefit' ? max($values) : min($values);
+            }
         }
 
         $results = [];
@@ -165,11 +179,14 @@ class ManagerController extends Controller
             foreach ($snapshotCriteria as $criterion) {
                 $x = $evaluations[$gap->id][$criterion['id']] ?? 1; 
                 $weight = $criterion['weight']; 
-                $r = $criterion['type'] == 'benefit' ? ($x / $minMax[$criterion['id']]) : ($minMax[$criterion['id']] / $x);
+                $minMaxValue = $minMax[$criterion['id']] ?? 1;
+                if($minMaxValue == 0) $minMaxValue = 1; // Hindari bagi nol
+                
+                $r = $criterion['type'] == 'benefit' ? ($x / $minMaxValue) : ($minMaxValue / $x);
                 $normalizedScores[$criterion['id']] = $r;
                 $totalScore += ($r * $weight);
             }
-            $results[] = ['gap' => $gap, 'original' => $evaluations[$gap->id], 'normalized' => $normalizedScores, 'final_score' => $totalScore];
+            $results[] = ['gap' => $gap, 'original' => $evaluations[$gap->id] ?? [], 'normalized' => $normalizedScores, 'final_score' => $totalScore];
         }
         
         usort($results, function($a, $b) { return $b['final_score'] <=> $a['final_score']; });
@@ -192,7 +209,11 @@ class ManagerController extends Controller
         $roadmaps = [];
         foreach ($groupedByDomain as $domainName => $responses) {
             $sortedResponses = $responses->sortBy('question.capability_level');
-            $currentMaturity = 5; $targetLevel = null; $recommendation = '';
+            
+            $currentMaturity = 5; 
+            $targetLevel = 'Maksimal (5)'; 
+            $recommendation = 'Kondisi sudah sangat optimal. Pertahankan performa tingkat tertinggi ini.';
+            
             foreach ($sortedResponses as $resp) {
                 if ($resp->score < 1) {
                     $targetLevel = $resp->question->capability_level;
@@ -217,9 +238,8 @@ class ManagerController extends Controller
         }
         $audit->itml_score = count($roadmaps) > 0 ? round($totalMaturity / count($roadmaps), 2) : 0;
 
-        $progressNotes = AuditProgress::where('audit_id', $audit->id)->pluck('notes', 'domain_name')->toArray();
+        $progressNotes = AuditProgress::where('audit_id', $audit->id)->get()->keyBy('domain_name')->toArray();
 
-        // KITA LEMPAR SEMUA DOMAIN UNTUK CHART
         $allDomains = Domain::orderBy('code', 'asc')->get();
         $chartLabels = [];
         $chartData = [];
@@ -242,14 +262,22 @@ class ManagerController extends Controller
     {
         $request->validate([
             'domain_name' => 'required|string',
-            'notes' => 'required|string'
+            'notes' => 'required|string',
+            'evidence' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048' // Validasi file
         ]);
+
+        $dataToSave = ['notes' => $request->notes];
+
+        // Jika manajer mengupload file bukti
+        if ($request->hasFile('evidence')) {
+            $dataToSave['evidence_file'] = $request->file('evidence')->store('progress_evidences', 'public');
+        }
 
         AuditProgress::updateOrCreate(
             ['audit_id' => $audit->id, 'domain_name' => $request->domain_name],
-            ['notes' => $request->notes]
+            $dataToSave
         );
 
-        return redirect()->back()->with('success', 'Catatan progress untuk ' . explode(' - ', $request->domain_name)[0] . ' berhasil diperbarui!');
+        return redirect()->back()->with('success', 'Catatan progress & Bukti (Evidence) untuk ' . explode(' - ', $request->domain_name)[0] . ' berhasil diperbarui!');
     }
 }

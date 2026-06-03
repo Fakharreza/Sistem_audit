@@ -25,8 +25,8 @@
                             <div>
                                 <h3 class="text-lg font-bold text-gray-900">Daftar Kriteria</h3>
                                 <p class="text-sm text-gray-500 mt-1">Total Bobot Saat Ini: 
-                                    <span class="font-black px-2 py-0.5 rounded {{ $totalWeight == 1 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-red-100 text-red-700 border border-red-200' }}">
-                                        {{ $totalWeight }} (Idealnya 1.0)
+                                    <span id="total-bobot-container" class="font-black px-2 py-0.5 rounded {{ $totalWeight == 1 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-red-100 text-red-700 border border-red-200' }}">
+                                        <span id="total-bobot-text">{{ $totalWeight }}</span> (Idealnya 1.0)
                                     </span>
                                 </p>
                             </div>
@@ -69,7 +69,7 @@
                                                 </td>
                                                 
                                                 <td class="px-4 py-3 text-center">
-                                                    <input type="number" step="0.01" name="criteria[{{ $item->id }}][weight]" value="{{ $item->weight }}" required class="w-full text-sm text-center border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 shadow-sm font-black text-indigo-700">
+                                                    <input type="number" step="0.01" name="criteria[{{ $item->id }}][weight]" value="{{ $item->weight }}" required class="weight-input w-full text-sm text-center border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 shadow-sm font-black text-indigo-700">
                                                 </td>
                                                 
                                                 <td class="px-4 py-3 text-center">
@@ -85,7 +85,7 @@
                             </div>
 
                             <div class="p-5 bg-gray-50 border-t border-gray-200 flex justify-end">
-                                <button type="submit" class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <button type="submit" id="btn-simpan" class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     Simpan Perubahan
                                 </button>
@@ -128,7 +128,7 @@
                                     <label class="block text-sm font-bold text-gray-700 mb-1.5">Bobot (W)</label>
                                     <input type="number" id="new-weight" step="0.01" name="weight" required placeholder="Contoh: 0.15" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 shadow-sm font-bold text-indigo-700">
                                 </div>
-                                <button type="button" onclick="confirmAdd()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-lg shadow-sm hover:bg-emerald-700 transition-colors flex justify-center items-center">
+                                <button type="button" id="btn-tambah" onclick="confirmAdd()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-lg shadow-sm hover:bg-emerald-700 transition-colors flex justify-center items-center">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     Tambah Kriteria
                                 </button>
@@ -249,5 +249,54 @@
         function executeAdd() {
             document.getElementById('add-form').submit();
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const editInputs = document.querySelectorAll('.weight-input');
+            const newInput = document.getElementById('new-weight');
+            const totalContainer = document.getElementById('total-bobot-container');
+            const totalText = document.getElementById('total-bobot-text');
+            const btnSimpan = document.getElementById('btn-simpan');
+            const btnTambah = document.getElementById('btn-tambah');
+
+            function hitungTotal() {
+                let total = 0;
+                
+                editInputs.forEach(input => {
+                    total += parseFloat(input.value) || 0;
+                });
+                
+                total += parseFloat(newInput.value) || 0;
+            
+                totalText.innerText = total.toFixed(2);
+
+                if (total > 1.00) {
+                    totalContainer.className = 'font-black px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-200';
+                    btnSimpan.disabled = true;
+                    btnSimpan.classList.add('opacity-50', 'cursor-not-allowed');
+                    btnTambah.disabled = true;
+                    btnTambah.classList.add('opacity-50', 'cursor-not-allowed');
+                } else if (total === 1.00) {
+                    totalContainer.className = 'font-black px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 border border-emerald-200';
+                    btnSimpan.disabled = false;
+                    btnSimpan.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnTambah.disabled = false;
+                    btnTambah.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                   
+                    totalContainer.className = 'font-black px-2 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200';
+                    btnSimpan.disabled = false;
+                    btnSimpan.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnTambah.disabled = false;
+                    btnTambah.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+
+            editInputs.forEach(input => {
+                input.addEventListener('input', hitungTotal);
+            });
+            newInput.addEventListener('input', hitungTotal);
+            
+            hitungTotal();
+        });
     </script>
 </x-app-layout>

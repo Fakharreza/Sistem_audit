@@ -187,7 +187,7 @@ class ManagerController extends Controller
                 $x = $evaluations[$gap->id][$criterion['id']] ?? 1; 
                 $weight = $criterion['weight']; 
                 $minMaxValue = $minMax[$criterion['id']] ?? 1;
-                if($minMaxValue == 0) $minMaxValue = 1; // Hindari bagi nol
+                if($minMaxValue == 0) $minMaxValue = 1; 
                 
                 $r = $criterion['type'] == 'benefit' ? ($x / $minMaxValue) : ($minMaxValue / $x);
                 $normalizedScores[$criterion['id']] = $r;

@@ -12,6 +12,8 @@ class GapEvaluation extends Model
         return $this->belongsTo(AuditResponse::class);
     }
     public function criterion() {
-        return $this->belongsTo(Criterion::class);
+       return $this->belongsTo(Criterion::class)->withTrashed();
+
     }
+    
 }

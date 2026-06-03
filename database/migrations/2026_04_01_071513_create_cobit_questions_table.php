@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('capability_level'); 
             $table->string('activity_code'); 
             $table->text('description'); 
+            $table->text('evidence_hint')->nullable();
             $table->timestamps();
         });
     }

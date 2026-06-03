@@ -1,22 +1,57 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-bold text-xl text-gray-800 leading-tight">
-            Hasil Rekomendasi Perbaikan: <span class="text-indigo-600">{{ $audit->audit_code }}</span>
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
+    <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-8 mb-8 text-white shadow-lg">
-                <h3 class="text-2xl font-black mb-2">🎉 Kalkulasi SAW Selesai!</h3>
-                <p class="text-indigo-100">Berikut adalah daftar prioritas perbaikan berdasarkan analisis kombinasi gap lapangan dan evaluasi manajerial. Aktivitas di <strong>Peringkat 1</strong> wajib ditindaklanjuti terlebih dahulu.</p>
+            <div class="mb-6 px-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4">
+                <div>
+                    <h2 class="text-2xl font-black text-gray-800">
+                        Hasil Rekomendasi Perbaikan: <span class="text-indigo-600">{{ $audit->audit_code }}</span>
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1 font-medium">Laporan akhir evaluasi tingkat kapabilitas dan roadmap perbaikan COBIT 2019.</p>
+                </div>
+
+                <a href="{{ route('manager.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg font-bold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 hover:text-indigo-600 transition-all duration-200 w-full sm:w-auto justify-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Kembali
+                </a>
+            </div>
+
+            @if(session('success'))
+                <div class="mb-6 p-4 bg-emerald-100 border-l-4 border-emerald-500 text-emerald-800 font-bold rounded shadow-sm flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <div class="mb-8 p-6 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl shadow-lg text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h3 class="text-2xl font-black mb-1">🎉 Evaluasi Selesai!</h3>
+                    <p class="text-indigo-100 text-sm">Keseluruhan nilai rata-rata tingkat kapabilitas (ITML Score) untuk audit ini.</p>
+                </div>
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="text-left md:text-right w-full md:w-auto">
+                        <span class="block text-xs font-bold text-indigo-200 uppercase tracking-widest mb-1">ITML Score</span>
+                        <div class="text-4xl font-black bg-white text-indigo-700 px-6 py-2 rounded-lg shadow-inner w-full md:w-auto text-center md:text-right flex items-center justify-center md:justify-end">
+                            {{ number_format($audit->itml_score ?? 0, 2) }} <span class="text-base text-indigo-300 font-bold ml-1">/ 5.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-200 mb-8">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-xl font-bold text-gray-900">Peta Kapabilitas Spesifik</h3>
+                    <p class="text-sm text-gray-500 mt-1">Visualisasi grafik laba-laba untuk hasil temuan di sesi audit <span class="font-bold text-indigo-600">{{ $audit->audit_code }}</span>.</p>
+                    <div class="relative w-full max-w-2xl mx-auto h-[400px] mt-6">
+                        <canvas id="detailSpiderChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-200 mb-8">
                 <div class="p-6 border-b border-gray-200">
                     <h3 class="text-xl font-bold text-gray-900">Prioritas Eksekusi (SAW)</h3>
-                    <p class="text-sm text-gray-500 mt-1">Urutan pengerjaan masalah berdasarkan bobot Urgensi, Biaya, dan Kemudahan.</p>
+                    <p class="text-sm text-gray-500 mt-1">Urutan rekomendasi perbaikan berdasarkan kalkulasi matriks evaluasi dan kriteria SAW.</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
@@ -29,9 +64,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($results as $index => $row)
+                            @forelse($results as $index => $row)
                                 <tr class="border-b {{ $index === 0 ? 'bg-yellow-50 hover:bg-yellow-100' : 'hover:bg-gray-50' }}">
-                                    
                                     <td class="px-6 py-4 text-center">
                                         @if($index === 0)
                                             <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-yellow-400 text-yellow-900 font-black text-lg shadow-sm">1</span>
@@ -43,7 +77,6 @@
                                             <span class="font-bold text-gray-500">{{ $index + 1 }}</span>
                                         @endif
                                     </td>
-
                                     <td class="px-6 py-4">
                                         <div class="font-black text-indigo-700 text-base mb-1">
                                             {{ $row['gap']->question->activity_code }}
@@ -53,16 +86,26 @@
                                         </div>
                                         <div class="text-gray-700 text-sm leading-relaxed">{{ $row['gap']->question->description }}</div>
                                     </td>
-
                                     <td class="px-6 py-4 text-center">
                                         <span class="font-black text-xl text-gray-900">{{ number_format($row['final_score'], 3) }}</span>
                                     </td>
-
                                     <td class="px-6 py-4 text-xs text-gray-600 italic">
                                         "{{ $row['gap']->notes ?: 'Tidak ada catatan auditor.' }}"
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-6 py-12 text-center bg-emerald-50 border-b border-emerald-100">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-3">
+                                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            </div>
+                                            <h4 class="text-lg font-black text-emerald-800">Tidak Ada Celah (Gap) Ditemukan!</h4>
+                                            <p class="text-sm text-emerald-600 mt-1 font-medium">Semua aktivitas telah mencapai target level maksimal. Perhitungan SAW tidak diperlukan.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -72,17 +115,16 @@
                 <div class="p-6 bg-white border-b border-gray-200">
                     <div class="mb-4">
                         <h3 class="text-xl font-bold text-gray-900">Tindak Lanjut / Area of Improvement (AoI)</h3>
-                        <p class="text-sm text-gray-500 mt-1">Roadmap perbaikan berjenjang. Domain harus memenuhi level bawah terlebih dahulu sebelum direkomendasikan naik ke level selanjutnya.</p>
+                        <p class="text-sm text-gray-500 mt-1">Roadmap perbaikan berjenjang beserta log progress pelaksanaan.</p>
                     </div>
 
-                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
-                        <table class="w-full text-sm text-left text-gray-600">
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg pb-4">
+                        <table class="w-full text-sm text-left text-gray-600 min-w-[800px]">
                             <thead class="text-xs text-white uppercase bg-blue-700">
                                 <tr>
                                     <th rowspan="2" class="px-4 py-3 border border-blue-600 text-center align-middle w-48">Control Objective</th>
                                     <th rowspan="2" class="px-2 py-3 border border-blue-600 text-center align-middle w-16">Maturity</th>
                                     <th colspan="4" class="px-4 py-2 border border-blue-600 text-center">Area of Improvement (AoI)</th>
-                                    <th rowspan="2" class="px-4 py-3 border border-blue-600 text-center align-middle w-24">Tahun Pemenuhan</th>
                                 </tr>
                                 <tr>
                                     <th class="px-4 py-2 border border-blue-600 text-center w-1/4 bg-blue-600">Level 2</th>
@@ -97,30 +139,66 @@
                                         <td class="px-4 py-3 font-medium text-gray-900 border border-gray-200 bg-gray-50">
                                             {{ $item['domain'] }}
                                         </td>
-                                        
                                         <td class="px-4 py-3 font-bold text-center border border-gray-200 text-blue-700 bg-blue-50">
                                             {{ $item['maturity'] }}
                                         </td>
                                         
                                         @for($level = 2; $level <= 5; $level++)
-                                            <td class="px-4 py-3 border border-gray-200 align-top {{ $level == $item['target_level'] ? 'bg-yellow-50' : '' }}">
-                                                @if($level == $item['target_level'])
-                                                    <span class="text-xs font-semibold text-yellow-800 bg-yellow-200 px-2 py-1 rounded inline-block mb-2 shadow-sm">TARGET PERBAIKAN</span><br>
-                                                    <span class="font-medium text-gray-800">{{ $item['recommendation'] }}</span>
-                                                @elseif($level < $item['target_level'] || $item['target_level'] == null)
+                                            <td class="px-4 py-3 border border-gray-200 align-top {{ $level == $item['target_level'] || ($item['target_level'] === 'Maksimal (5)' && $level == 5) ? 'bg-yellow-50' : '' }}">
+                                                @if($level == $item['target_level'] || ($item['target_level'] === 'Maksimal (5)' && $level == 5))
+                                                    <div class="h-full flex flex-col justify-between">
+                                                        <div>
+                                                            <span class="text-[10px] font-bold text-yellow-800 bg-yellow-200 px-2 py-1 rounded inline-block mb-2 shadow-sm border border-yellow-300">
+                                                                {{ $item['target_level'] === 'Maksimal (5)' ? 'KONDISI OPTIMAL' : 'TARGET PERBAIKAN' }}
+                                                            </span><br>
+                                                            <span class="font-medium text-gray-800">{{ $item['recommendation'] }}</span>
+                                                        </div>
+                                                        
+                                                        @php
+                                                            $currentNote = $progressNotes[$item['domain']]['notes'] ?? '';
+                                                            $currentEvidence = $progressNotes[$item['domain']]['evidence_file'] ?? '';
+                                                        @endphp
+                                                        <div class="mt-4 pt-3 border-t border-yellow-300">
+                                                            
+                                                            <button type="button" 
+                                                                    data-domain="{{ $item['domain'] }}" 
+                                                                    data-note="{{ $currentNote }}"
+                                                                    data-evidence="{{ $currentEvidence }}"
+                                                                    onclick="openProgressModal(this)" 
+                                                                    class="mb-2 text-[11px] font-bold text-indigo-700 bg-white hover:bg-indigo-50 border-2 border-indigo-200 px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 w-full shadow-sm">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                                                {{ $currentNote ? 'Edit Progress' : 'Update Progress' }}
+                                                            </button>
+                                                            
+                                                            @if($currentNote || $currentEvidence)
+                                                                <div class="flex flex-col border border-yellow-300 rounded-lg bg-white/90 overflow-hidden shadow-sm mt-1">
+                                                                    @if($currentNote)
+                                                                        <div class="p-2.5 text-xs text-gray-700 italic leading-relaxed">
+                                                                            "{{ $currentNote }}"
+                                                                        </div>
+                                                                    @endif
+                                                                    
+                                                                    @if($currentEvidence)
+                                                                        <a href="{{ asset('storage/' . $currentEvidence) }}" target="_blank" class="flex items-center justify-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-t border-yellow-200 px-3 py-2 transition-colors text-[11px] font-bold w-full {{ !$currentNote ? 'border-t-0' : '' }}">
+                                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                                                                            Buka Dokumen Bukti
+                                                                        </a>
+                                                                    @endif
+                                                                </div>
+                                                            @endif
+
+                                                        </div>
+                                                        </div>
+                                                @elseif($level < $item['target_level'] || $item['target_level'] === 'Maksimal (5)')
                                                     <div class="text-center text-emerald-500 font-bold mt-2">
-                                                        <svg class="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                                        Achieved
+                                                        <svg class="w-6 h-6 mx-auto mb-1 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                        <span class="text-xs">Achieved</span>
                                                     </div>
                                                 @else
                                                     <div class="text-center text-gray-300 mt-2">-</div>
                                                 @endif
                                             </td>
                                         @endfor
-
-                                        <td class="px-4 py-3 text-center border border-gray-200 font-black text-gray-800 bg-gray-50">
-                                            {{ date('Y') + 1 }}
-                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -129,12 +207,144 @@
                 </div>
                 
                 <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end rounded-b-xl">
-                    <a href="{{ route('manager.dashboard') }}" class="px-6 py-2.5 bg-indigo-600 border border-transparent rounded-lg text-sm font-bold text-white shadow-sm hover:bg-indigo-700 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Selesai & Kembali ke Dashboard
+                    <a href="{{ route('manager.dashboard') }}" class="px-6 py-2.5 bg-slate-800 rounded-lg text-sm font-bold text-white shadow-sm hover:bg-slate-900 transition-colors flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Kembali ke Dashboard
                     </a>
                 </div>
             </div>
-
         </div>
     </div>
+
+    <div id="progressModal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center p-4 transition-all">
+        <div class="relative mx-auto p-6 w-full max-w-xl shadow-2xl rounded-2xl bg-white border border-gray-100">
+            <div class="mt-2">
+                <div class="flex justify-between items-center mb-5 border-b border-gray-100 pb-4">
+                    <h3 class="text-xl font-black text-gray-900 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        Update Progress
+                    </h3>
+                    <button type="button" onclick="closeProgressModal()" class="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <form action="{{ route('manager.audit.progress.store', $audit->id) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="domain_name" id="modalDomainName">
+                    
+                    <div class="mb-5">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Domain Target</label>
+                        <input type="text" id="modalDomainDisplay" disabled class="bg-gray-50 border border-gray-200 text-indigo-900 text-sm rounded-lg w-full p-3 font-bold shadow-sm">
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Catatan Pelaksanaan</label>
+                        <textarea name="notes" id="modalNotes" rows="4" required class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 w-full p-3 shadow-sm" placeholder="Contoh: Telah disusun draft SOP untuk tata kelola data..."></textarea>
+                    </div>
+
+                    <div class="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Upload Bukti (Evidence)</label>
+                        
+                        <div id="existingEvidenceContainer" class="hidden mb-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between shadow-sm">
+                            <div class="flex items-center text-emerald-700 text-sm font-bold">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Bukti Sudah Tersimpan
+                            </div>
+                            <a id="modalEvidenceLink" href="#" target="_blank" class="px-3 py-1.5 bg-white text-emerald-700 border border-emerald-200 rounded hover:bg-emerald-100 transition text-xs font-bold shadow-sm">Lihat File</a>
+                        </div>
+
+                        <input type="file" name="evidence" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 transition-colors cursor-pointer">
+                        <p class="text-[11px] text-gray-500 mt-2 font-medium">Format: PDF, JPG, PNG (Max 2MB). Kosongkan jika tidak ingin mengubah file saat ini.</p>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" onclick="closeProgressModal()" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition shadow-sm w-full sm:w-auto">Batal</button>
+                        <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-md transition w-full sm:w-auto flex justify-center items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            Simpan Progress
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Modal Logic
+        function openProgressModal(buttonElement) {
+            const domainName = buttonElement.getAttribute('data-domain');
+            const note = buttonElement.getAttribute('data-note');
+            const evidence = buttonElement.getAttribute('data-evidence');
+            
+            document.getElementById('modalDomainName').value = domainName;
+            document.getElementById('modalDomainDisplay').value = domainName;
+            document.getElementById('modalNotes').value = note;
+            
+            // Logic buat nampilin atau nyembunyiin box "Bukti Sudah Tersimpan"
+            const evidenceContainer = document.getElementById('existingEvidenceContainer');
+            const evidenceLink = document.getElementById('modalEvidenceLink');
+            
+            if (evidence) {
+                evidenceContainer.classList.remove('hidden');
+                evidenceLink.href = "{{ asset('storage') }}/" + evidence;
+            } else {
+                evidenceContainer.classList.add('hidden');
+                evidenceLink.href = "#";
+            }
+            
+            document.getElementById('progressModal').classList.remove('hidden');
+        }
+
+        function closeProgressModal() {
+            document.getElementById('progressModal').classList.add('hidden');
+        }
+
+        // Radar Chart Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('detailSpiderChart');
+            const labels = [];
+            const dataScores = [];
+            
+            @foreach($roadmaps as $item)
+                labels.push("{{ explode(' - ', $item['domain'])[0] }}");
+                dataScores.push({{ $item['maturity'] }});
+            @endforeach
+
+            if(labels.length > 0) {
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Maturity Level',
+                            data: dataScores, 
+                            fill: true,
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: 'rgb(59, 130, 246)', 
+                            pointBackgroundColor: 'rgb(59, 130, 246)', 
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(59, 130, 246)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { display: true, color: 'rgba(0, 0, 0, 0.1)' },
+                                grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                                suggestedMin: 0, suggestedMax: 5,
+                                ticks: { stepSize: 1, backdropColor: 'transparent', font: { weight: 'bold' } },
+                                pointLabels: { font: { size: 12, weight: 'bold' }, color: '#4B5563' }
+                            }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        });
+    </script>
 </x-app-layout>

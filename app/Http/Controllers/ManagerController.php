@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage; 
 use App\Models\Audit;
 use App\Models\Criterion;
 use App\Models\AuditResponse;
@@ -112,7 +113,6 @@ class ManagerController extends Controller
                     ->get();
 
         if ($gaps->isEmpty()) {
-            // FIX BUG 1: JIKA SEMPURNA, LANGSUNG LEMPAR KE RESULT (BYPASS SAW)
             return redirect()->route('manager.audit.result', $audit->id)
                              ->with('success', 'Luar biasa! Audit ini mendapatkan nilai sempurna (Level 5) di semua area. Tidak perlu perhitungan prioritas SAW.');
         }
@@ -156,7 +156,6 @@ class ManagerController extends Controller
                         'weight' => $eval->weight_snapshot ?? ($eval->criterion->weight ?? 0),
                         'type' => $eval->type_snapshot ?? ($eval->criterion->type ?? 'benefit'),
                         'name' => $eval->criterion->name ?? 'Kriteria (Telah Dihapus)'
-                        
                     ];
                 }
             }
@@ -269,14 +268,26 @@ class ManagerController extends Controller
     {
         $request->validate([
             'domain_name' => 'required|string',
-            'notes' => 'required|string',
-            'evidence' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048' // Validasi file
+            'notes' => 'nullable|string',
+            'evidence' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048' 
         ]);
 
         $dataToSave = ['notes' => $request->notes];
 
-        // Jika manajer mengupload file bukti
+        $progress = AuditProgress::where('audit_id', $audit->id)
+                                 ->where('domain_name', $request->domain_name)
+                                 ->first();
+
+        if ($request->delete_evidence == '1' && $progress && $progress->evidence_file) {
+            Storage::disk('public')->delete($progress->evidence_file);
+            $dataToSave['evidence_file'] = null; 
+        }
+
         if ($request->hasFile('evidence')) {
+            if ($progress && $progress->evidence_file && $request->delete_evidence != '1') {
+                Storage::disk('public')->delete($progress->evidence_file);
+            }
+            
             $dataToSave['evidence_file'] = $request->file('evidence')->store('progress_evidences', 'public');
         }
 

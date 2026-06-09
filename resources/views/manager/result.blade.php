@@ -16,16 +16,10 @@
                 </a>
             </div>
 
-            @if(session('success'))
-                <div class="mb-6 p-4 bg-emerald-100 border-l-4 border-emerald-500 text-emerald-800 font-bold rounded shadow-sm flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    {{ session('success') }}
-                </div>
-            @endif
 
             <div class="mb-8 p-6 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl shadow-lg text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h3 class="text-2xl font-black mb-1">  Evaluasi Selesai!</h3>
+                    <h3 class="text-2xl font-black mb-1"> 🎉 Evaluasi Selesai!</h3>
                     <p class="text-indigo-100 text-sm">Keseluruhan nilai rata-rata tingkat kapabilitas (ITML Score) untuk audit ini.</p>
                 </div>
                 <div class="flex items-center gap-3 w-full md:w-auto">
@@ -188,7 +182,7 @@
                                                             @endif
 
                                                         </div>
-                                                        </div>
+                                                    </div>
                                                 @elseif($level < $item['target_level'] || $item['target_level'] === 'Maksimal (5)')
                                                     <div class="text-center text-emerald-500 font-bold mt-2">
                                                         <svg class="w-6 h-6 mx-auto mb-1 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -232,6 +226,7 @@
                 <form action="{{ route('manager.audit.progress.store', $audit->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="domain_name" id="modalDomainName">
+                    <input type="hidden" name="delete_evidence" id="deleteEvidenceFlag" value="0">
                     
                     <div class="mb-5">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Domain Target</label>
@@ -240,18 +235,24 @@
 
                     <div class="mb-5">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Catatan Pelaksanaan</label>
-                        <textarea name="notes" id="modalNotes" rows="4" required class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 w-full p-3 shadow-sm" placeholder="Contoh: Telah disusun draft SOP untuk tata kelola data..."></textarea>
+                        <textarea name="notes" id="modalNotes" rows="4" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 w-full p-3 shadow-sm" placeholder="Contoh: Telah disusun draft SOP untuk tata kelola data..."></textarea>
                     </div>
 
                     <div class="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Upload Bukti (Evidence)</label>
                         
-                        <div id="existingEvidenceContainer" class="hidden mb-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between shadow-sm">
+                        <div id="existingEvidenceContainer" class="hidden mb-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between shadow-sm transition-all duration-300">
                             <div class="flex items-center text-emerald-700 text-sm font-bold">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                Bukti Sudah Tersimpan
+                                Bukti Tersimpan
                             </div>
-                            <a id="modalEvidenceLink" href="#" target="_blank" class="px-3 py-1.5 bg-white text-emerald-700 border border-emerald-200 rounded hover:bg-emerald-100 transition text-xs font-bold shadow-sm">Lihat File</a>
+                            <div class="flex gap-2">
+                                <a id="modalEvidenceLink" href="#" target="_blank" class="px-3 py-1.5 bg-white text-emerald-700 border border-emerald-200 rounded hover:bg-emerald-100 transition text-xs font-bold shadow-sm">Lihat</a>
+                                <button type="button" onclick="markEvidenceForDeletion()" class="px-3 py-1.5 bg-white text-red-600 border border-red-200 rounded hover:bg-red-50 transition text-xs font-bold shadow-sm flex items-center">
+                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    Hapus
+                                </button>
+                            </div>
                         </div>
 
                         <input type="file" name="evidence" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 transition-colors cursor-pointer">
@@ -270,7 +271,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Modal Logic
         function openProgressModal(buttonElement) {
@@ -278,11 +279,15 @@
             const note = buttonElement.getAttribute('data-note');
             const evidence = buttonElement.getAttribute('data-evidence');
             
+            // Set values
             document.getElementById('modalDomainName').value = domainName;
             document.getElementById('modalDomainDisplay').value = domainName;
             document.getElementById('modalNotes').value = note;
             
-            // Logic buat nampilin atau nyembunyiin box "Bukti Sudah Tersimpan"
+            // RESET flag hapus tiap buka modal
+            document.getElementById('deleteEvidenceFlag').value = '0';
+            
+            // Logic Box Bukti Tersimpan
             const evidenceContainer = document.getElementById('existingEvidenceContainer');
             const evidenceLink = document.getElementById('modalEvidenceLink');
             
@@ -299,6 +304,30 @@
 
         function closeProgressModal() {
             document.getElementById('progressModal').classList.add('hidden');
+        }
+
+        function markEvidenceForDeletion() {
+            Swal.fire({
+                title: 'Hapus Bukti?',
+                text: "File bukti ini akan dihapus permanen saat Anda menekan tombol Simpan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444', // Warna merah (red-500)
+                cancelButtonColor: '#6b7280', // Warna abu-abu (gray-500)
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('deleteEvidenceFlag').value = '1';
+                    document.getElementById('existingEvidenceContainer').classList.add('hidden');
+                    
+                    Swal.fire(
+                        'Terhapus!',
+                        'Bukti akan dihapus saat Anda menekan tombol Simpan.',
+                        'success'
+                    );
+                }
+            });
         }
 
         // Radar Chart Logic
@@ -345,6 +374,23 @@
                     }
                 });
             }
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: "{!! session('success') !!}",
+                    confirmButtonText: 'Oke, Mantap!',
+                    confirmButtonColor: '#4f46e5', 
+                    background: '#ffffff',
+                    backdrop: `rgba(17, 24, 39, 0.4)` 
+                });
+            @endif
         });
     </script>
 </x-app-layout>

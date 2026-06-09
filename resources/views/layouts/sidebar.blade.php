@@ -49,9 +49,9 @@
             </div>
         </div>
         
-        <form method="POST" action="{{ route('logout') }}">
+        <form id="logout-form" method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="flex items-center justify-center w-full py-2.5 text-sm font-bold transition-colors rounded-lg text-gray-600 bg-white border border-gray-300 hover:bg-gray-100 hover:text-red-600 hover:border-red-200 group" :class="isMini ? 'px-0' : 'px-4'" title="Keluar Aplikasi">
+            <button type="button" onclick="confirmLogout()" class="flex items-center justify-center w-full py-2.5 text-sm font-bold transition-colors rounded-lg text-gray-600 bg-white border border-gray-300 hover:bg-gray-100 hover:text-red-600 hover:border-red-200 group" :class="isMini ? 'px-0' : 'px-4'" title="Keluar Aplikasi">
                 <svg class="w-5 h-5 shrink-0 text-gray-400 group-hover:text-red-500 transition-colors" :class="isMini ? 'mr-0' : 'mr-2'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 <span x-show="!isMini" class="whitespace-nowrap">Keluar Aplikasi</span>
             </button>
@@ -60,3 +60,22 @@
     </div>
     
 </aside>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmLogout() {
+        Swal.fire({
+            title: 'Yakin mau keluar?',
+            text: "Sesi Anda akan berakhir dan Anda perlu login kembali.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',  
+            confirmButtonText: 'Ya, Keluar!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+</script>

@@ -75,6 +75,16 @@
                                         </p>
                                     </div>
                                 </div>
+
+                                @if($gap->evidence_file)
+                                <div class="mt-4 pt-4 border-t border-gray-200 border-dashed">
+                                    <span class="text-sm font-semibold text-gray-700 block mb-2">File Bukti Lampiran (Evidence):</span>
+                                    <a href="{{ asset('storage/' . $gap->evidence_file) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:border-indigo-300 transition-all duration-200 text-xs font-bold shadow-sm group">
+                                        <svg class="w-4 h-4 mr-2 text-indigo-500 group-hover:text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                                        Lihat Dokumen Bukti
+                                    </a>
+                                </div>
+                                @endif
                             </div>
 
                             <div>
@@ -159,29 +169,23 @@
             const selects = form.querySelectorAll('.eval-select');
             const indicator = document.getElementById('save-indicator');
             
-            // Bikin Kunci Unik untuk nyimpen draft di browser khusus buat Audit ini
             const storageKey = 'draft_audit_saw_' + '{{ $audit->id }}';
             
-            // 1. LOAD DRAFT (Kalau ada)
             const savedDraft = JSON.parse(localStorage.getItem(storageKey) || '{}');
             let hasDraft = false;
 
             selects.forEach(select => {
                 const inputName = select.name;
                 
-                // Kalau ada di draft, isi otomatis!
                 if (savedDraft[inputName]) {
                     select.value = savedDraft[inputName];
                     hasDraft = true;
                 }
 
-                // 2. AUTO-SAVE SETIAP KALI MEMILIH
                 select.addEventListener('change', function() {
-                    // Simpan ke Object & LocalStorage
                     savedDraft[inputName] = this.value;
                     localStorage.setItem(storageKey, JSON.stringify(savedDraft));
 
-                    // Munculin animasi "Draft Tersimpan"
                     indicator.classList.remove('hidden');
                     indicator.classList.add('flex');
                     setTimeout(() => {
@@ -189,14 +193,12 @@
                         indicator.classList.remove('flex');
                     }, 2000);
 
-                    // Hapus warna merah kalau udah diisi
                     this.classList.remove('border-red-500', 'ring-red-500', 'bg-red-50');
                     this.classList.add('border-gray-300');
                     this.nextElementSibling.classList.add('hidden');
                 });
             });
 
-            // Tampilkan indikator hijau sebentar kalau pas loading ada draft yang ke-load
             if(hasDraft) {
                 indicator.innerHTML = '✨ Draft sebelumnya dipulihkan!';
                 indicator.classList.remove('hidden');
@@ -208,7 +210,6 @@
                 }, 3000);
             }
 
-            // 3. VALIDASI SAAT TOMBOL SUBMIT DITEKAN
             form.addEventListener('submit', function(e) {
                 let allFilled = true;
                 let firstEmptySelect = null;
@@ -217,10 +218,9 @@
                     if (select.value === "") {
                         allFilled = false;
                         
-                        // Bikin kotaknya merah mencolok
                         select.classList.remove('border-gray-300');
                         select.classList.add('border-red-500', 'ring-1', 'ring-red-500', 'bg-red-50');
-                        select.nextElementSibling.classList.remove('hidden'); // Munculin teks error
+                        select.nextElementSibling.classList.remove('hidden');
 
                         if (!firstEmptySelect) {
                             firstEmptySelect = select;
@@ -229,18 +229,14 @@
                 });
 
                 if (!allFilled) {
-                    // Cegah form terkirim
                     e.preventDefault();
                     
-                    // Alert & Auto Scroll
                     alert('Tunggu! Masih ada kriteria yang belum Anda nilai. Silakan lengkapi kotak yang berwarna merah.');
                     firstEmptySelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     firstEmptySelect.focus();
                 } else {
-                    // BERHASIL! Hapus draft di browser biar kalau buka evaluasi baru nggak bentrok
                     localStorage.removeItem(storageKey);
                     
-                    // Ubah tombol jadi loading
                     const btn = document.getElementById('btnSubmit');
                     btn.innerHTML = 'Sedang Memproses...';
                     btn.classList.add('opacity-75', 'cursor-not-allowed');

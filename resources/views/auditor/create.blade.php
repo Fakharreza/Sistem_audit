@@ -32,11 +32,12 @@
                         <input type="date" name="audit_date" value="{{ old('audit_date') }}" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
                     </div>
 
-                    <div class="mb-8">
+                   <div class="mb-8">
                         <label class="block text-sm font-bold text-gray-700 mb-3">Pilih Domain COBIT 2019 yang Dievaluasi:</label>
-                        <div class="bg-slate-50 p-5 rounded-xl border border-gray-200">
+                        
+                        <div class="p-5 rounded-xl border transition-colors {{ $errors->has('domain_ids') ? 'bg-red-50 border-red-400' : 'bg-slate-50 border-gray-200' }}">
                             @foreach($domains as $domain)
-                                <div class="flex items-center mb-3 last:mb-0 hover:bg-slate-100 p-2 rounded-lg transition-colors cursor-pointer">
+                                <div class="flex items-center mb-3 last:mb-0 hover:bg-white p-2 rounded-lg transition-colors cursor-pointer">
                                     <input type="checkbox" name="domain_ids[]" value="{{ $domain->id }}" id="domain_{{ $domain->id }}" class="w-5 h-5 text-indigo-600 bg-white border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
                                     <label for="domain_{{ $domain->id }}" class="ml-3 text-sm font-medium text-gray-900 cursor-pointer w-full">
                                         <span class="font-bold text-indigo-700">{{ $domain->code }}</span> - {{ $domain->name }}
@@ -44,7 +45,14 @@
                                 </div>
                             @endforeach
                         </div>
+                        
                         <p class="text-xs text-gray-500 mt-2 font-medium">*Kamu bisa memilih lebih dari satu domain sekaligus.</p>
+
+                        @error('domain_ids')
+                            <div class="mt-3 p-3 bg-red-100 border-l-4 border-red-500 rounded text-red-700">
+                                <p class="text-sm font-bold">⚠️ {{ $message }}</p>
+                            </div>
+                        @enderror
                     </div>
 
                     <div class="flex justify-end pt-5 border-t border-gray-100">

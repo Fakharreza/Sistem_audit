@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('audit_id')->constrained()->cascadeOnDelete();
             $table->foreignId('cobit_question_id')->constrained()->cascadeOnDelete();
-            $table->decimal('score', 3, 1); 
+            $table->decimal('score', 3, 1)->nullable(); 
             $table->string('evidence_file')->nullable(); 
             $table->text('notes')->nullable();
             $table->timestamps();

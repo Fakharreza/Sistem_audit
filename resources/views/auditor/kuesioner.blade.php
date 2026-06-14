@@ -145,7 +145,6 @@
                                                                     <div class="md:col-span-7 space-y-4">
                                                                         <div>
                                                                             <label class="block text-xs font-bold text-gray-700 mb-1">Skor Penilaian</label>
-                                                                            <!-- ONCHANGE UNTUK REALTIME PROGRESS -->
                                                                             <select name="answers[{{ $question->id }}][score]" data-domain-id="{{ $domain->id }}" onchange="updateRealTimeProgress()" class="score-select bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 shadow-sm disabled:bg-gray-100 disabled:text-gray-500 transition-colors" {{ $isReadOnly ? 'disabled' : '' }}>
                                                                                 <option value="" {{ !$savedAnswer ? 'selected' : '' }}>-- Belum Dinilai --</option>
                                                                                 <option value="0" {{ ($savedAnswer && $savedAnswer->score == '0') ? 'selected' : '' }}>0 - None (Belum Ada)</option>
@@ -179,13 +178,14 @@
                                                                                     <a href="{{ asset('storage/' . $savedAnswer->evidence_file) }}" target="_blank" class="text-emerald-700 hover:text-emerald-900 underline font-bold px-2 py-1 bg-white rounded border border-emerald-200 hover:bg-emerald-100 transition">Lihat File</a>
                                                                                 </div>
                                                                             @endif
-                                                                            <div class="flex-1 flex items-center justify-center w-full">
+                                                                            <div class="flex-1 flex items-center justify-center w-full relative">
                                                                                 <label id="dropzone-{{ $question->id }}" class="flex flex-col items-center justify-center w-full h-full {{ ($savedAnswer && $savedAnswer->evidence_file) ? 'min-h-[70px]' : 'min-h-[110px]' }} border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-indigo-400 transition-colors">
                                                                                     <div class="flex flex-col items-center justify-center py-2 text-center" id="preview-{{ $question->id }}">
                                                                                         <svg class="w-5 h-5 mb-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                                                                                         <p class="text-[11px] text-gray-500 font-semibold">{{ ($savedAnswer && $savedAnswer->evidence_file) ? 'Klik / Tarik file baru' : 'Klik / Tarik File ke Sini' }}</p>
+                                                                                        <p class="text-[10px] text-gray-400 font-medium mt-1">Maks. 2MB (PDF/JPG/PNG)</p>
                                                                                     </div>
-                                                                                    <input type="file" name="answers[{{ $question->id }}][evidence]" class="hidden" accept=".pdf,.jpg,.jpeg,.png" onchange="previewFile(this, '{{ $question->id }}')" />
+                                                                                    <input type="file" name="answers[{{ $question->id }}][evidence]" class="hidden evidence-input" accept=".pdf,.jpg,.jpeg,.png" onchange="previewFile(this, '{{ $question->id }}')" />
                                                                                 </label>
                                                                             </div>
                                                                         @endif
@@ -232,7 +232,6 @@
                                     
                                     <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
                                         @if(!$isReadOnly)
-                                            <!-- TOMBOL SIMPAN DRAFT -->
                                             <button type="submit" name="action" value="draft" formnovalidate class="inline-flex items-center justify-center px-6 py-3 text-sm font-bold text-gray-700 bg-white border-2 border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-400 transition-all duration-200">
                                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
                                                 Simpan Draft
@@ -246,7 +245,6 @@
                                             </button>
                                         @else
                                             @if(!$isReadOnly)
-                                                <!-- TOMBOL SELESAI (Picu Modal) -->
                                                 <button type="button" onclick="triggerSubmitConfirmation(this)" class="inline-flex items-center justify-center px-8 py-3 text-sm font-bold text-white bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                     Selesaikan Kuesioner
@@ -269,7 +267,6 @@
         </div>
     </div>
 
-    <!-- MODAL POP-UP ERROR (PERTANYAAN BELUM LENGKAP) -->
     <div id="modal-error" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-gray-900/60 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden transform transition-all border border-gray-100">
             <div class="p-8 text-center">
@@ -287,7 +284,6 @@
         </div>
     </div>
 
-    <!-- MODAL POP-UP KONFIRMASI (YAKIN SELESAI?) -->
     <div id="modal-confirm" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-gray-900/60 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden transform transition-all border border-gray-100">
             <div class="p-8 text-center border-b border-gray-50">
@@ -310,7 +306,6 @@
         </div>
     </div>
 
-    <!-- SIHIR ANTI-PURGE TAILWIND (Biar warna tab muncul 100%) -->
     <div class="hidden bg-gray-100 text-gray-500 border-gray-200 bg-yellow-100 text-yellow-700 border-yellow-300 bg-blue-100 text-blue-700 border-blue-300 opacity-80 hover:opacity-100"></div>
 
     <style>
@@ -323,13 +318,36 @@
         }
     </style>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // INISIALISASI REAL-TIME PROGRESS SAAT HALAMAN DIMUAT
         document.addEventListener('DOMContentLoaded', function() {
             updateRealTimeProgress();
+
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: "{!! session('success') !!}",
+                    confirmButtonText: 'Oke, Mantap!',
+                    confirmButtonColor: '#4f46e5', 
+                    background: '#ffffff',
+                    backdrop: `rgba(17, 24, 39, 0.4)` 
+                });
+            @endif
+
+            @if($errors->any())
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops! Gagal Menyimpan',
+                    html: `{!! implode('<br>', $errors->all()) !!}`,
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#ef4444',
+                    background: '#ffffff',
+                    backdrop: `rgba(17, 24, 39, 0.4)`
+                });
+            @endif
         });
 
-        // FUNGSI GANTI TAB
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.add('hidden');
@@ -339,7 +357,7 @@
             document.getElementById(tabId).classList.remove('hidden');
             document.getElementById(tabId).classList.add('block');
 
-            // Reset Tab Lain
+
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 const currentStatus = btn.getAttribute('data-status-class');
                 btn.className = `tab-btn inline-block px-6 py-3 rounded-t-lg transition-all duration-200 border-t-2 border-l-2 border-r-2 font-medium opacity-80 hover:opacity-100 ${currentStatus}`;
@@ -377,13 +395,41 @@
             document.getElementById('domainTabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // FUNGSI PREVIEW FILE
         function previewFile(input, questionId) {
             const previewContainer = document.getElementById('preview-' + questionId);
             const dropzone = document.getElementById('dropzone-' + questionId);
+            const maxSize = 2 * 1024 * 1024; // 2MB dalam bytes
             
             if (input.files && input.files[0]) {
-                const fileName = input.files[0].name;
+                const file = input.files[0];
+                const fileName = file.name;
+
+                if (file.size > maxSize) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'File Terlalu Besar!',
+                        text: `File "${fileName}" ukurannya lebih dari 2MB. Silakan kompres atau pilih file lain.`,
+                        confirmButtonText: 'Paham',
+                        confirmButtonColor: '#ef4444',
+                        background: '#ffffff',
+                        backdrop: `rgba(17, 24, 39, 0.4)`
+                    });
+                    
+
+                    input.value = '';
+                    
+            
+                    previewContainer.innerHTML = `
+                        <svg class="w-5 h-5 mb-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        <p class="text-[11px] text-gray-500 font-semibold">Klik / Tarik File ke Sini</p>
+                        <p class="text-[10px] text-gray-400 font-medium mt-1">Maks. 2MB (PDF/JPG/PNG)</p>
+                    `;
+                    dropzone.classList.remove('border-indigo-400', 'bg-indigo-50');
+                    dropzone.classList.add('border-gray-300', 'bg-gray-50');
+                    
+                    return; 
+                }
+
                 previewContainer.innerHTML = `
                     <svg class="w-8 h-8 mb-1 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     <p class="text-xs text-indigo-700 font-bold truncate max-w-[180px] text-center" title="${fileName}">${fileName}</p>
@@ -412,24 +458,21 @@
 
                 let statusClass = '';
                 if(answered === 0) {
-                    statusClass = 'bg-gray-100 text-gray-500 border-gray-200'; // Kosong
+                    statusClass = 'bg-gray-100 text-gray-500 border-gray-200'; 
                 } else if(answered < selects.length) {
-                    statusClass = 'bg-yellow-100 text-yellow-700 border-yellow-300'; // Sebagian
+                    statusClass = 'bg-yellow-100 text-yellow-700 border-yellow-300'; 
                 } else {
-                    statusClass = 'bg-blue-100 text-blue-700 border-blue-300'; // Penuh
+                    statusClass = 'bg-blue-100 text-blue-700 border-blue-300'; 
                 }
 
-                // Simpan kelas baru ke data attribute
                 tab.setAttribute('data-status-class', statusClass);
 
-                // Update warna tab jika tab tersebut BUKAN yang sedang aktif (diklik)
                 if(!tab.classList.contains('border-indigo-500')) {
                     tab.className = `tab-btn inline-block px-6 py-3 rounded-t-lg transition-all duration-200 border-t-2 border-l-2 border-r-2 font-medium opacity-80 hover:opacity-100 ${statusClass}`;
                 }
             });
         }
 
-        // FUNGSI MODAL DAN VALIDASI SUBMIT
         let pendingSubmitBtn = null;
 
         function triggerSubmitConfirmation(buttonElement) {
@@ -443,13 +486,11 @@
             });
 
             if (unanswered > 0) {
-                // Tampilkan Modal Error Cantik
                 document.getElementById('unanswered-count').innerText = unanswered;
                 document.getElementById('modal-error').classList.remove('hidden');
                 return false;
             }
 
-            // Tampilkan Modal Konfirmasi Cantik
             pendingSubmitBtn = buttonElement;
             document.getElementById('modal-confirm').classList.remove('hidden');
         }

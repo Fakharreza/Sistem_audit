@@ -255,8 +255,11 @@
                             </div>
                         </div>
 
-                        <input type="file" name="evidence" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 transition-colors cursor-pointer">
+                        <input type="file" name="evidence" id="evidenceInput" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 transition-colors cursor-pointer">
                         <p class="text-[11px] text-gray-500 mt-2 font-medium">Format: PDF, JPG, PNG (Max 2MB). Kosongkan jika tidak ingin mengubah file saat ini.</p>
+                        @error('evidence')
+                            <p class="text-xs text-red-600 mt-1 font-bold">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="flex justify-end gap-3 pt-2">
@@ -272,7 +275,56 @@
     </div>
 
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: "{!! session('success') !!}",
+                    confirmButtonText: 'Oke, Mantap!',
+                    confirmButtonColor: '#4f46e5', 
+                    background: '#ffffff',
+                    backdrop: `rgba(17, 24, 39, 0.4)` 
+                });
+            @endif
+
+            @if($errors->any())
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops! Gagal Menyimpan',
+                    html: `{!! implode('<br>', $errors->all()) !!}`,
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#ef4444',
+                    background: '#ffffff',
+                    backdrop: `rgba(17, 24, 39, 0.4)`
+                });
+            @endif
+
+            const evidenceInput = document.getElementById('evidenceInput');
+            if (evidenceInput) {
+                evidenceInput.addEventListener('change', function(e) {
+                    const file = this.files[0];
+                    const maxSize = 2 * 1024 * 1024; 
+
+                    if (file && file.size > maxSize) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'File Terlalu Besar!',
+                            text: 'Ukuran file maksimal adalah 2MB. Silakan kompres atau pilih file lain.',
+                            confirmButtonText: 'Paham',
+                            confirmButtonColor: '#ef4444',
+                            background: '#ffffff',
+                            backdrop: `rgba(17, 24, 39, 0.4)`
+                        });
+                        
+                        this.value = ''; 
+                    }
+                });
+            }
+        });
+
         // Modal Logic
         function openProgressModal(buttonElement) {
             const domainName = buttonElement.getAttribute('data-domain');
@@ -312,8 +364,8 @@
                 text: "File bukti ini akan dihapus permanen saat Anda menekan tombol Simpan!",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#ef4444', // Warna merah (red-500)
-                cancelButtonColor: '#6b7280', // Warna abu-abu (gray-500)
+                confirmButtonColor: '#ef4444', 
+                cancelButtonColor: '#6b7280', 
                 confirmButtonText: 'Ya, Hapus!',
                 cancelButtonText: 'Batal'
             }).then((result) => {
@@ -374,23 +426,6 @@
                     }
                 });
             }
-        });
-    </script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            @if(session('success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: "{!! session('success') !!}",
-                    confirmButtonText: 'Oke, Mantap!',
-                    confirmButtonColor: '#4f46e5', 
-                    background: '#ffffff',
-                    backdrop: `rgba(17, 24, 39, 0.4)` 
-                });
-            @endif
         });
     </script>
 </x-app-layout>

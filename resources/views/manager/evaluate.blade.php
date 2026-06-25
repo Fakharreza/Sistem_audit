@@ -40,17 +40,37 @@
 
             <form action="{{ route('manager.audit.calculate', $audit->id) }}" method="POST" id="formEvaluate">
                 @csrf
-                
+
                 @foreach($gaps as $index => $gap)
+                    
+                    {{-- SIHIR PHP: Cari tahu ini pertanyaan nomor urut berapa di aktivitas tersebut --}}
+                    @php
+                        $allQuestionsInActivity = \App\Models\CobitQuestion::where('activity_code', $gap->question->activity_code)
+                                                                            ->orderBy('id')
+                                                                            ->pluck('id')
+                                                                            ->toArray();
+                        // Cari posisi ID pertanyaan ini di array, lalu tambah 1 (karena array mulai dari 0)
+                        $originalNumber = array_search($gap->question->id, $allQuestionsInActivity) + 1;
+                    @endphp
+
                     <div class="bg-white shadow-sm border border-gray-200 rounded-xl mb-6 overflow-hidden hover:border-indigo-300 transition duration-200">
                         
                         <div class="bg-indigo-50 border-b border-gray-200 p-4">
                             <div class="flex items-center gap-2 mb-1">
+                                <!-- INI DIA! INDIKATOR NOMOR ASLI DARI SOAL -->
+                                <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm uppercase">Pertanyaan #{{ $originalNumber }}</span>
+                                
                                 <span class="bg-indigo-200 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Level {{ $gap->question->capability_level }}</span>
                                 <span class="bg-white text-gray-700 border border-gray-300 text-[10px] font-bold px-2 py-0.5 rounded">{{ $gap->question->domain->code ?? 'DOMAIN' }}</span>
                             </div>
-                            <h4 class="text-lg font-bold text-indigo-900">{{ $gap->question->activity_code }}</h4>
-                            <p class="text-sm text-gray-800 mt-1 leading-relaxed">{{ $gap->question->description }}</p>
+                            
+                            <h4 class="text-lg font-bold text-indigo-900 mt-1">Aktivitas: {{ $gap->question->activity_code }}</h4>
+                            
+                            <!-- KOTAK PERNYATAAN YANG SAMA PERSIS DENGAN SOAL -->
+                            <div class="mt-3 bg-white border border-indigo-100 p-4 rounded-lg shadow-sm border-l-4 border-l-indigo-400">
+                                <span class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-1.5">Pernyataan Evaluasi:</span>
+                                <p class="text-sm text-gray-800 leading-relaxed font-semibold">"{{ $gap->question->description }}"</p>
+                            </div>
                         </div>
 
                         <div class="p-5 grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -133,6 +153,7 @@
         </div>
     </div>
 
+    <!-- Sisa kode Modal & JS (Sama persis seperti file sebelumnya) -->
     <div id="modal-back" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-gray-900/60 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden transform transition-all border border-gray-100">
             <div class="p-8 text-center border-b border-gray-50">

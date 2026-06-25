@@ -16,7 +16,6 @@
                 </a>
             </div>
 
-
             <div class="mb-8 p-6 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl shadow-lg text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h3 class="text-2xl font-black mb-1"> 🎉 Evaluasi Selesai!</h3>
@@ -59,6 +58,16 @@
                         </thead>
                         <tbody>
                             @forelse($results as $index => $row)
+                                
+                                {{-- SIHIR PHP: Cari tahu ini pertanyaan nomor berapa --}}
+                                @php
+                                    $allQuestionsInActivity = \App\Models\CobitQuestion::where('activity_code', $row['gap']->question->activity_code)
+                                                                                        ->orderBy('id')
+                                                                                        ->pluck('id')
+                                                                                        ->toArray();
+                                    $originalNumber = array_search($row['gap']->question->id, $allQuestionsInActivity) + 1;
+                                @endphp
+
                                 <tr class="border-b {{ $index === 0 ? 'bg-yellow-50 hover:bg-yellow-100' : 'hover:bg-gray-50' }}">
                                     <td class="px-6 py-4 text-center">
                                         @if($index === 0)
@@ -72,10 +81,15 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="font-black text-indigo-700 text-base mb-1">
-                                            {{ $row['gap']->question->activity_code }}
+                                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                            <span class="font-black text-indigo-700 text-base">{{ $row['gap']->question->activity_code }}</span>
+                                            
+                                            {{-- BADGE LEVEL & PERNYATAAN (DESAIN KALEM) --}}
+                                            <span class="bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] px-2 py-0.5 rounded uppercase font-bold">Level {{ $row['gap']->question->capability_level }}</span>
+                                            <span class="bg-gray-100 text-gray-700 border border-gray-300 text-[10px] px-2 py-0.5 rounded uppercase font-bold">Pernyataan #{{ $originalNumber }}</span>
+
                                             @if($index === 0)
-                                                <span class="ml-2 bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded border border-red-200 uppercase tracking-wider">Top Priority</span>
+                                                <span class="bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded border border-red-200 uppercase tracking-wider font-bold">Top Priority</span>
                                             @endif
                                         </div>
                                         <div class="text-gray-700 text-sm leading-relaxed">{{ $row['gap']->question->description }}</div>
@@ -274,7 +288,7 @@
         </div>
     </div>
 
- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -325,21 +339,17 @@
             }
         });
 
-        // Modal Logic
         function openProgressModal(buttonElement) {
             const domainName = buttonElement.getAttribute('data-domain');
             const note = buttonElement.getAttribute('data-note');
             const evidence = buttonElement.getAttribute('data-evidence');
             
-            // Set values
             document.getElementById('modalDomainName').value = domainName;
             document.getElementById('modalDomainDisplay').value = domainName;
             document.getElementById('modalNotes').value = note;
             
-            // RESET flag hapus tiap buka modal
             document.getElementById('deleteEvidenceFlag').value = '0';
             
-            // Logic Box Bukti Tersimpan
             const evidenceContainer = document.getElementById('existingEvidenceContainer');
             const evidenceLink = document.getElementById('modalEvidenceLink');
             
@@ -373,16 +383,11 @@
                     document.getElementById('deleteEvidenceFlag').value = '1';
                     document.getElementById('existingEvidenceContainer').classList.add('hidden');
                     
-                    Swal.fire(
-                        'Terhapus!',
-                        'Bukti akan dihapus saat Anda menekan tombol Simpan.',
-                        'success'
-                    );
+                    Swal.fire('Terhapus!', 'Bukti akan dihapus saat Anda menekan tombol Simpan.', 'success');
                 }
             });
         }
 
-        // Radar Chart Logic
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('detailSpiderChart');
             const labels = [];

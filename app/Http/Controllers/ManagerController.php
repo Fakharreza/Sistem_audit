@@ -256,10 +256,7 @@ class ManagerController extends Controller
             $roadmapMaturities[$code] = $rm['maturity'];
         }
 
-        foreach ($allDomains as $domain) {
-            $chartLabels[] = $domain->code;
-            $chartData[] = $roadmapMaturities[$domain->code] ?? 0;
-        }
+        
 
         return view('manager.result', compact('audit', 'results', 'criteria', 'roadmaps', 'progressNotes', 'chartLabels', 'chartData'));
     }

@@ -4,20 +4,27 @@
             
             <div class="mb-6 px-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4">
                 <div>
-                    <h2 class="text-2xl font-black text-gray-800">
-                        Manajemen Kriteria SAW
-                    </h2>
+                    <h2 class="text-2xl font-black text-gray-800">Manajemen Kriteria SAW</h2>
                     <p class="text-sm text-gray-500 mt-1 font-medium">Atur nama, atribut, dan bobot (W) kriteria untuk evaluasi prioritas perbaikan.</p>
                 </div>
-                
                 <a href="{{ route('manager.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg font-bold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 hover:text-indigo-600 transition-all duration-200">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Kembali ke Dashboard
                 </a>
             </div>
 
+            @if(session('error'))
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if(session('success'))
+                <div class="mb-4 p-4 bg-emerald-100 border border-emerald-400 text-emerald-700 rounded-lg">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <div class="flex flex-col md:flex-row gap-6">
-                
                 <div class="w-full md:w-2/3">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-200">
                         
@@ -26,7 +33,7 @@
                                 <h3 class="text-lg font-bold text-gray-900">Daftar Kriteria</h3>
                                 <p class="text-sm text-gray-500 mt-1">Total Bobot Saat Ini: 
                                     <span id="total-bobot-container" class="font-black px-2 py-0.5 rounded {{ $totalWeight == 1 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-red-100 text-red-700 border border-red-200' }}">
-                                        <span id="total-bobot-text">{{ $totalWeight }}</span> (Idealnya 1.0)
+                                        <span id="total-bobot-text">{{ $totalWeight }}</span> (Idealnya 1.00)
                                     </span>
                                 </p>
                             </div>
@@ -56,28 +63,23 @@
                                     <tbody class="divide-y divide-gray-100">
                                         @foreach($criteria as $item)
                                             <tr class="hover:bg-slate-50 transition-colors">
-                                                
                                                 <td class="px-4 py-3">
                                                     <input type="text" name="criteria[{{ $item->id }}][name]" value="{{ $item->name }}" required class="w-full text-sm border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 shadow-sm font-medium text-gray-800">
                                                 </td>
-                                                
                                                 <td class="px-4 py-3 text-center">
-                                                    <select name="criteria[{{ $item->id }}][type]" class="w-full text-sm border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 shadow-sm font-medium {{ $item->type == 'benefit' ? 'text-emerald-700' : 'text-orange-700' }}">
+                                                    <select name="criteria[{{ $item->id }}][type]" class="w-full text-sm border-gray-300 rounded focus:ring-indigo-500 shadow-sm font-medium {{ $item->type == 'benefit' ? 'text-emerald-700' : 'text-orange-700' }}">
                                                         <option value="benefit" {{ $item->type == 'benefit' ? 'selected' : '' }}>Benefit</option>
                                                         <option value="cost" {{ $item->type == 'cost' ? 'selected' : '' }}>Cost</option>
                                                     </select>
                                                 </td>
-                                                
                                                 <td class="px-4 py-3 text-center">
-                                                    <input type="number" step="0.01" name="criteria[{{ $item->id }}][weight]" value="{{ $item->weight }}" required class="weight-input w-full text-sm text-center border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 shadow-sm font-black text-indigo-700">
+                                                    <input type="number" step="0.01" name="criteria[{{ $item->id }}][weight]" value="{{ $item->weight }}" required class="weight-input w-full text-sm text-center border-gray-300 rounded focus:ring-indigo-500 shadow-sm font-black text-indigo-700">
                                                 </td>
-                                                
                                                 <td class="px-4 py-3 text-center">
                                                     <button type="button" onclick="confirmDelete('{{ $item->id }}')" class="px-3 py-2 bg-white border border-red-200 text-red-600 text-xs font-bold rounded shadow-sm hover:bg-red-50 transition-colors flex items-center justify-center mx-auto w-full">
                                                         Hapus
                                                     </button>
                                                 </td>
-                                                
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -85,7 +87,7 @@
                             </div>
 
                             <div class="p-5 bg-gray-50 border-t border-gray-200 flex justify-end">
-                                <button type="submit" id="btn-simpan" class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <button type="submit" id="btn-simpan" class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-200">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     Simpan Perubahan
                                 </button>
@@ -98,7 +100,6 @@
                                 @method('DELETE')
                             </form>
                         @endforeach
-
                     </div>
                 </div>
 
@@ -111,28 +112,28 @@
                             </h3>
                         </div>
                         <div class="p-6">
-                            <form id="add-form" action="{{ route('manager.criteria.store') }}" method="POST">
-                                @csrf
+                            <div id="add-form">
                                 <div class="mb-5">
                                     <label class="block text-sm font-bold text-gray-700 mb-1.5">Nama Kriteria</label>
-                                    <input type="text" id="new-name" name="name" required placeholder="Contoh: Dampak Operasional" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 shadow-sm">
+                                    <input type="text" id="new-name" placeholder="Contoh: Dampak Operasional" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 shadow-sm">
                                 </div>
                                 <div class="mb-5">
                                     <label class="block text-sm font-bold text-gray-700 mb-1.5">Tipe Atribut</label>
-                                    <select name="type" required class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 shadow-sm font-medium">
+                                    <select id="new-type" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 shadow-sm font-medium">
                                         <option value="benefit">Benefit (Makin besar = baik)</option>
                                         <option value="cost">Cost (Makin kecil = baik)</option>
                                     </select>
                                 </div>
                                 <div class="mb-6">
                                     <label class="block text-sm font-bold text-gray-700 mb-1.5">Bobot (W)</label>
-                                    <input type="number" id="new-weight" step="0.01" name="weight" required placeholder="Contoh: 0.15" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 shadow-sm font-bold text-indigo-700">
+                                    <input type="number" id="new-weight" step="0.01" placeholder="Contoh: 0.15" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 shadow-sm font-bold text-indigo-700">
                                 </div>
-                                <button type="button" id="btn-tambah" onclick="confirmAdd()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-lg shadow-sm hover:bg-emerald-700 transition-colors flex justify-center items-center">
+                                <button type="button" onclick="executeAdd()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-lg shadow-sm hover:bg-emerald-700 transition-colors flex justify-center items-center">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    Tambah Kriteria
+                                    Tambahkan ke Tabel
                                 </button>
-                            </form>
+                                <p class="text-xs text-gray-500 mt-3 text-center">*Klik Simpan Perubahan di tabel untuk menyimpan permanen.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -185,23 +186,20 @@
         </div>
     </div>
 
-    <div id="modal-add" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-gray-900/60 backdrop-blur-sm transition-opacity">
+    <div id="modal-error" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-gray-900/60 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden transform transition-all border border-gray-100">
             <div class="p-8 text-center border-b border-gray-50">
-                <div class="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-5 border-4 border-emerald-100">
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 border-4 border-red-100">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 </div>
-                <h3 class="text-xl font-black text-gray-900 mb-3 tracking-tight">Tambah Kriteria?</h3>
+                <h3 class="text-xl font-black text-gray-900 mb-3 tracking-tight">Kesalahan Validasi</h3>
                 <p class="text-sm text-gray-500 leading-relaxed">
-                    Pastikan total seluruh bobot kriteria (termasuk yang baru ini) bernilai <strong class="text-emerald-600">tepat 1.00</strong> agar perhitungan SAW akurat.
+                    Total akumulasi bobot kriteria harus <strong class="text-red-600">tepat 1.00 (100%)</strong>. Saat ini total bobot yang Anda masukkan adalah <span id="error-current-total" class="font-bold text-gray-900 bg-gray-200 px-1 rounded"></span>.
                 </p>
             </div>
             <div class="bg-gray-50 p-6 flex flex-col gap-3 rounded-b-2xl">
-                <button type="button" onclick="executeAdd()" class="w-full px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-md transition-all flex justify-center items-center">
-                    Ya, Tambahkan Sekarang
-                </button>
-                <button type="button" onclick="closeModal('modal-add')" class="w-full px-5 py-3.5 bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-100 text-sm font-bold rounded-xl transition-all">
-                    Periksa Kembali
+                <button type="button" onclick="closeModal('modal-error')" class="w-full px-5 py-3.5 bg-gray-800 hover:bg-gray-900 text-white text-sm font-bold rounded-xl shadow-md transition-all flex justify-center items-center">
+                    Mengerti & Perbaiki
                 </button>
             </div>
         </div>
@@ -210,93 +208,100 @@
     <script>
         let pendingDeleteId = null;
 
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); pendingDeleteId = null; }
 
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-            pendingDeleteId = null;
-        }
+        function confirmReset() { openModal('modal-reset'); }
+        function executeReset() { document.getElementById('reset-form').submit(); }
 
-        function confirmReset() {
-            openModal('modal-reset');
-        }
-        function executeReset() {
-            document.getElementById('reset-form').submit();
-        }
+        function confirmDelete(id) { pendingDeleteId = id; openModal('modal-delete'); }
+        function executeDelete() { if(pendingDeleteId) { document.getElementById('delete-form-' + pendingDeleteId).submit(); } }
 
-        function confirmDelete(id) {
-            pendingDeleteId = id;
-            openModal('modal-delete');
-        }
-        function executeDelete() {
-            if(pendingDeleteId) {
-                document.getElementById('delete-form-' + pendingDeleteId).submit();
-            }
-        }
-
-        function confirmAdd() {
-            const inputName = document.getElementById('new-name').value;
-            const inputWeight = document.getElementById('new-weight').value;
+        function executeAdd() {
+            const nameInput = document.getElementById('new-name');
+            const typeInput = document.getElementById('new-type');
+            const weightInput = document.getElementById('new-weight');
             
-            if(!inputName || !inputWeight) {
-                document.getElementById('add-form').reportValidity();
+            if(!nameInput.value || !weightInput.value) {
+                alert('Harap isi Nama dan Bobot Kriteria!');
                 return;
             }
-            openModal('modal-add');
+
+            const tbody = document.querySelector('tbody');
+            const uniqueId = Date.now(); 
+            
+            const typeColor = typeInput.value === 'benefit' ? 'text-emerald-700' : 'text-orange-700';
+            const typeText = typeInput.value === 'benefit' ? 'Benefit' : 'Cost';
+
+            const newRow = `
+                <tr class="hover:bg-slate-50 transition-colors bg-indigo-50">
+                    <td class="px-4 py-3">
+                        <input type="text" name="new_criteria[${uniqueId}][name]" value="${nameInput.value}" required class="w-full text-sm border-gray-300 rounded focus:ring-indigo-500 shadow-sm font-medium text-gray-800">
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <select name="new_criteria[${uniqueId}][type]" class="w-full text-sm border-gray-300 rounded focus:ring-indigo-500 shadow-sm font-medium ${typeColor}">
+                            <option value="benefit" ${typeInput.value === 'benefit' ? 'selected' : ''}>Benefit</option>
+                            <option value="cost" ${typeInput.value === 'cost' ? 'selected' : ''}>Cost</option>
+                        </select>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <input type="number" step="0.01" name="new_criteria[${uniqueId}][weight]" value="${weightInput.value}" required class="weight-input w-full text-sm text-center border-gray-300 rounded focus:ring-indigo-500 shadow-sm font-black text-indigo-700">
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <button type="button" onclick="this.closest('tr').remove(); updateKalkulasi();" class="px-3 py-2 bg-white border border-red-200 text-red-600 text-xs font-bold rounded shadow-sm hover:bg-red-50 transition-colors flex items-center justify-center w-full">
+                            Batal
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            tbody.insertAdjacentHTML('beforeend', newRow);
+
+            nameInput.value = ''; 
+            weightInput.value = '';
+
+            updateKalkulasi();
         }
-        function executeAdd() {
-            document.getElementById('add-form').submit();
+
+        // FUNGSI NGITUNG OTOMATIS
+        function updateKalkulasi() {
+            let total = 0;
+            const allTableWeights = document.querySelectorAll('tbody .weight-input');
+            
+            allTableWeights.forEach(input => {
+                total += parseFloat(input.value) || 0;
+                input.removeEventListener('input', updateKalkulasi);
+                input.addEventListener('input', updateKalkulasi);
+            });
+
+            const totalContainer = document.getElementById('total-bobot-container');
+            const totalText = document.getElementById('total-bobot-text');
+            
+            totalText.innerText = total.toFixed(2);
+
+            if (total > 1.00) {
+                totalContainer.className = 'font-black px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-200';
+            } else if (total === 1.00) {
+                totalContainer.className = 'font-black px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 border border-emerald-200';
+            } else {
+                totalContainer.className = 'font-black px-2 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200';
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const editInputs = document.querySelectorAll('.weight-input');
-            const newInput = document.getElementById('new-weight');
-            const totalContainer = document.getElementById('total-bobot-container');
-            const totalText = document.getElementById('total-bobot-text');
+            updateKalkulasi(); 
+
             const btnSimpan = document.getElementById('btn-simpan');
-            const btnTambah = document.getElementById('btn-tambah');
-
-            function hitungTotal() {
-                let total = 0;
-                
-                editInputs.forEach(input => {
-                    total += parseFloat(input.value) || 0;
-                });
-                
-                total += parseFloat(newInput.value) || 0;
             
-                totalText.innerText = total.toFixed(2);
-
-                if (total > 1.00) {
-                    totalContainer.className = 'font-black px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-200';
-                    btnSimpan.disabled = true;
-                    btnSimpan.classList.add('opacity-50', 'cursor-not-allowed');
-                    btnTambah.disabled = true;
-                    btnTambah.classList.add('opacity-50', 'cursor-not-allowed');
-                } else if (total === 1.00) {
-                    totalContainer.className = 'font-black px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 border border-emerald-200';
-                    btnSimpan.disabled = false;
-                    btnSimpan.classList.remove('opacity-50', 'cursor-not-allowed');
-                    btnTambah.disabled = false;
-                    btnTambah.classList.remove('opacity-50', 'cursor-not-allowed');
-                } else {
-                   
-                    totalContainer.className = 'font-black px-2 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200';
-                    btnSimpan.disabled = false;
-                    btnSimpan.classList.remove('opacity-50', 'cursor-not-allowed');
-                    btnTambah.disabled = false;
-                    btnTambah.classList.remove('opacity-50', 'cursor-not-allowed');
+            btnSimpan.addEventListener('click', function(event) {
+                let currentTotal = parseFloat(document.getElementById('total-bobot-text').innerText);
+                
+                if (currentTotal !== 1.00) {
+                    event.preventDefault(); 
+                    document.getElementById('error-current-total').innerText = currentTotal.toFixed(2);
+                    openModal('modal-error');
                 }
-            }
-
-            editInputs.forEach(input => {
-                input.addEventListener('input', hitungTotal);
             });
-            newInput.addEventListener('input', hitungTotal);
-            
-            hitungTotal();
         });
     </script>
 </x-app-layout>
